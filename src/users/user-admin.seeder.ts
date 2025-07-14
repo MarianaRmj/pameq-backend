@@ -7,7 +7,7 @@ export class UserAdminSeeder {
   constructor(private readonly userService: UserService) {}
 
   async run() {
-    const email = 'useradmin@pameq.com.co';
+    const email = 'pameq2025@gmail.com';
 
     // Cambia esto si tu método es 'findByEmail', 'getByEmail', etc.
     const existingUser = await this.userService.findByEmail(email);

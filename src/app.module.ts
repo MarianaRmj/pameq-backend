@@ -6,6 +6,9 @@ import typeorm from './config/typeorm';
 
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './users/user.module';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { mailerConfigFactory } from './config/mailer';
+import { RecoverModule } from './auth/recoverPassword/recover.module';
 
 @Module({
   imports: [
@@ -29,8 +32,14 @@ import { UserModule } from './users/user.module';
         };
       },
     }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: mailerConfigFactory,
+    }),
     AuthModule,
     UserModule,
+    RecoverModule,
   ],
 })
 export class AppModule {}
