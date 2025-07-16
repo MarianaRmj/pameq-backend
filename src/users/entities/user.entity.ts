@@ -31,4 +31,12 @@ export class User {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updated_at: Date;
+
+  // Agrego estos dos campos para el proceso de recuperación de contraseña
+
+  @Column({ type: 'varchar', nullable: true })
+  resetPasswordToken: string | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  resetPasswordExpires: Date | null;
 }
