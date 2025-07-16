@@ -9,6 +9,7 @@ import { UserModule } from './users/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { mailerConfigFactory } from './config/mailer';
 import { RecoverModule } from './auth/recoverPassword/recover.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { RecoverModule } from './auth/recoverPassword/recover.module';
     AuthModule,
     UserModule,
     RecoverModule,
+    DashboardModule,
   ],
 })
 export class AppModule {}
