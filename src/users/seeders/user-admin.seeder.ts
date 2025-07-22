@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserService } from './user.service';
+import { UserService } from '../user.service';
 import * as bcrypt from 'bcryptjs'; // Usar bcryptjs, que ya tienes instalado
 
 @Injectable()
@@ -9,7 +9,6 @@ export class UserAdminSeeder {
   async run() {
     const email = 'pameq2025@gmail.com';
 
-    // Cambia esto si tu método es 'findByEmail', 'getByEmail', etc.
     const existingUser = await this.userService.findByEmail(email);
     if (existingUser) {
       console.log('El usuario administrador ya existe.');
@@ -23,7 +22,7 @@ export class UserAdminSeeder {
       email,
       password: hashedPassword,
       rol: 'admin',
-      sede_id: 1,
+      sedeId: 2,
     });
 
     console.log('✅ Usuario administrador creado correctamente.');

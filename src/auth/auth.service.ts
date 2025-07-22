@@ -10,7 +10,7 @@ type UserSafe = {
   email: string;
   nombre: string;
   rol: string;
-  sede_id: number | null;
+  sede: number | null;
   // Puedes agregar más campos si los tienes en la entidad y quieres exponerlos
 };
 
@@ -28,13 +28,24 @@ export class AuthService {
   ): Promise<UserSafe | null> {
     const user = await this.userRepository.findOne({
       where: { email },
-      select: ['id', 'email', 'nombre', 'password', 'rol', 'sede_id'],
+      relations: ['sede'],
+      select: ['id', 'email', 'nombre', 'password', 'rol'],
     });
+
     if (user && (await bcrypt.compare(password, user.password))) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...result } = user;
-      return result as UserSafe;
+      const { password, ...rest } = user;
+
+      const safeUser: UserSafe = {
+        id: rest.id,
+        email: rest.email,
+        nombre: rest.nombre,
+        rol: rest.rol,
+        sede: rest.sede?.id ?? null,
+      };
+
+      return safeUser;
     }
+
     return null;
   }
 

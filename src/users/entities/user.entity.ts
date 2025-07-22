@@ -4,7 +4,10 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Sede } from 'src/sedes/entities/sede.entity';
 
 @Entity({ name: 'usuarios' })
 export class User {
@@ -15,7 +18,7 @@ export class User {
   nombre: string;
 
   @Column({ select: false, nullable: true })
-  password: string; // **AGREGA este campo para login seguro**
+  password: string;
 
   @Column({ unique: true })
   email: string;
@@ -23,16 +26,15 @@ export class User {
   @Column({ length: 50 })
   rol: string;
 
-  @Column({ nullable: true })
-  sede_id: number;
+  @ManyToOne(() => Sede, { nullable: true })
+  @JoinColumn({ name: 'sede_id' }) // Nombre explícito de la columna FK
+  sede?: Sede;
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
   updated_at: Date;
-
-  // Agrego estos dos campos para el proceso de recuperación de contraseña
 
   @Column({ type: 'varchar', nullable: true })
   resetPasswordToken: string | null;

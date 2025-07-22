@@ -30,7 +30,7 @@ const config: DataSourceOptions = process.env.DATABASE_URL
       migrations: [
         isDev ? 'src/migrations/*{.ts,.js}' : 'dist/migrations/*{.ts,.js}',
       ],
-      dropSchema: isDev,
+      dropSchema: true,
     };
 
 export default registerAs('typeorm', () => config);
