@@ -1,8 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { loggerGlobal } from './middleware/logger.middleware';
-import { UserAdminSeeder } from './users/seeders/user-admin.seeder';
-import { InstitutionSedeSeeder } from './users/seeders/institution-sede.seeder';
+import { SeedModule } from './seeders/seed.module';
+import { UserAdminSeeder } from './seeders/user-admin.seeder';
+import { InstitutionSedeSeeder } from './seeders/institution-sede.seeder';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,13 +14,15 @@ async function bootstrap() {
   });
 
   app.use(loggerGlobal);
-
   await app.init();
-  const institutionSeeder = app.get(InstitutionSedeSeeder);
+
+  const seedModule = app.select(SeedModule);
+
+  const institutionSeeder = seedModule.get(InstitutionSedeSeeder);
   await institutionSeeder.run();
 
-  const seeder = app.get(UserAdminSeeder);
-  await seeder.run();
+  const userSeeder = seedModule.get(UserAdminSeeder);
+  await userSeeder.run();
 
   await app.listen(process.env.PORT || 3001);
 }
