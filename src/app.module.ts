@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from './config/typeorm';
-
 import { JwtModule } from '@nestjs/jwt';
 import { UserModule } from './users/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -12,6 +11,7 @@ import { RecoverModule } from './auth/recoverPassword/recover.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { InstitutionsModule } from './institutions/institutions.module';
 import { SedesModule } from './sedes/sedes.module';
+import { SeedModule } from './seeders/seed.module';
 
 @Module({
   imports: [
@@ -46,6 +46,7 @@ import { SedesModule } from './sedes/sedes.module';
     DashboardModule,
     InstitutionsModule,
     SedesModule,
+    SeedModule,
   ],
 })
 export class AppModule {}

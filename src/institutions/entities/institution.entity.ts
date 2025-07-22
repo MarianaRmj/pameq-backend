@@ -7,13 +7,31 @@ export class Institution {
   id: number;
 
   @Column()
-  nombre: string;
+  nombre_ips: string;
 
   @Column()
   nit: string;
 
   @Column()
-  tipo: string;
+  correo_contacto: string;
+
+  @Column()
+  direccion_principal: string;
+
+  @Column()
+  telefono: string;
+
+  @Column()
+  codigo_habilitacion: string;
+
+  @Column()
+  tipo_institucion: string;
+
+  @Column()
+  nombre_representante: string;
+
+  @Column()
+  nivel_complejidad: string;
 
   @OneToMany(() => Sede, (sede) => sede.institution)
   sedes: Sede[];

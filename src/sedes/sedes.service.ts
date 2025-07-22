@@ -10,56 +10,49 @@ import { Institution } from 'src/institutions/entities/institution.entity';
 export class SedesService {
   constructor(
     @InjectRepository(Sede)
-    private sedeRepo: Repository<Sede>,
-
+    private readonly sedeRepo: Repository<Sede>,
     @InjectRepository(Institution)
-    private institutionRepo: Repository<Institution>,
+    private readonly institutionRepo: Repository<Institution>,
   ) {}
 
-  async create(dto: CreateSedeDto) {
+  async create(data: CreateSedeDto) {
     const institution = await this.institutionRepo.findOne({
-      where: { id: dto.institutionId },
+      where: { id: data.institutionId },
     });
 
     if (!institution) {
-      throw new NotFoundException('Institución no encontrada');
+      throw new NotFoundException(
+        `Institución con ID ${data.institutionId} no encontrada.`,
+      );
     }
 
-    const sede = this.sedeRepo.create({
-      nombre: dto.nombre,
-      ciudad: dto.ciudad,
-      institution,
-    });
-
+    const sede = this.sedeRepo.create({ ...data, institution });
     return this.sedeRepo.save(sede);
   }
 
-  findAll() {
-    return this.sedeRepo.find({ relations: ['institution'] });
-  }
+  async update(id: number, data: UpdateSedeDto) {
+    const sede = await this.sedeRepo.findOne({
+      where: { id },
+      relations: ['institution'],
+    });
 
-  findOne(id: number) {
-    return this.sedeRepo.findOne({ where: { id }, relations: ['institution'] });
-  }
+    if (!sede) {
+      throw new NotFoundException(`Sede con ID ${id} no encontrada.`);
+    }
 
-  async update(id: number, dto: UpdateSedeDto) {
-    const sede = await this.sedeRepo.findOneBy({ id });
-    if (!sede) throw new NotFoundException('Sede no encontrada');
-
-    if (dto.institutionId) {
-      const institution = await this.institutionRepo.findOneBy({
-        id: dto.institutionId,
+    if (data.institutionId) {
+      const institution = await this.institutionRepo.findOne({
+        where: { id: data.institutionId },
       });
-      if (!institution)
-        throw new NotFoundException('Institución no encontrada');
+      if (!institution) {
+        throw new NotFoundException(
+          `Institución con ID ${data.institutionId} no encontrada.`,
+        );
+      }
       sede.institution = institution;
     }
 
-    Object.assign(sede, dto);
+    Object.assign(sede, data);
     return this.sedeRepo.save(sede);
-  }
-
-  remove(id: number) {
-    return this.sedeRepo.delete(id);
   }
 }

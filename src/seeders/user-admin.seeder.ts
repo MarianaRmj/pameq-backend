@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserService } from '../user.service';
+import { UserService } from '../users/user.service';
 import * as bcrypt from 'bcryptjs'; // Usar bcryptjs, que ya tienes instalado
 
 @Injectable()

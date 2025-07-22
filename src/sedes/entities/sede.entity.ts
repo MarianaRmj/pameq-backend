@@ -7,10 +7,19 @@ export class Sede {
   id: number;
 
   @Column()
-  nombre: string;
+  nombre_sede: string;
 
   @Column()
-  ciudad: string;
+  direccion: string;
+
+  @Column()
+  telefono: string;
+
+  @Column()
+  nombre_lider: string;
+
+  @Column()
+  codigo_habilitacion: string;
 
   @ManyToOne(() => Institution, (institution) => institution.sedes)
   institution: Institution;
