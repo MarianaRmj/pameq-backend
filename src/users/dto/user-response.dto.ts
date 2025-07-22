@@ -3,7 +3,8 @@ export class UserResponseDto {
   nombre: string;
   email: string;
   rol: string;
-  sede_id: number | null;
+  sedeId: number | null;
+  sedeNombre?: string;
   created_at: Date;
   updated_at: Date;
 }
