@@ -21,15 +21,32 @@ export class InstitutionsController {
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateInstitutionDto: UpdateInstitutionDto,
   ) {
-    return this.institutionService.update(id, updateInstitutionDto);
+    console.log('📥 PATCH institución', { id, updateInstitutionDto });
+
+    try {
+      const updated = await this.institutionService.update(
+        id,
+        updateInstitutionDto,
+      );
+      console.log('✅ Institución actualizada correctamente');
+      return updated;
+    } catch (error) {
+      console.error('❌ Error en InstitutionsController.update:', error);
+      throw error; // o usa HttpException si quieres personalizar el mensaje
+    }
   }
 
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.institutionService.findOne(id);
+  }
+
+  @Get(':id/ciclos')
+  findCiclos(@Param('id', ParseIntPipe) id: number) {
+    return this.institutionService.findCiclosByInstitution(id);
   }
 }

@@ -15,6 +15,9 @@ export class SedesService {
     private readonly institutionRepo: Repository<Institution>,
   ) {}
 
+  async findAll(): Promise<Sede[]> {
+    return this.sedeRepo.find();
+  }
   async create(data: CreateSedeDto) {
     const institution = await this.institutionRepo.findOne({
       where: { id: data.institutionId },

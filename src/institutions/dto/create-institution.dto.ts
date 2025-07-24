@@ -1,4 +1,13 @@
-import { IsString, IsNotEmpty, IsOptional, IsEmail } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsEmail,
+  ValidateNested,
+} from 'class-validator';
+import { CreateCicloDto } from 'src/cycles/dto/create-cycle.dto';
+import { Ciclo } from 'src/cycles/entities/cycle.entity';
 
 export class CreateInstitutionDto {
   @IsString()
@@ -33,6 +42,10 @@ export class CreateInstitutionDto {
   @IsNotEmpty()
   nivel_complejidad: string; // baja, media, alta
 
+  @IsString()
+  @IsNotEmpty()
+  enfoque: string;
+
   @IsEmail()
   @IsOptional()
   correo_contacto?: string;
@@ -44,4 +57,9 @@ export class CreateInstitutionDto {
   @IsString()
   @IsOptional()
   resolucion_habilitacion?: string;
+
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateCicloDto)
+  ciclos?: Ciclo[]; // ✅ Asegúrate de que tenga tipo definido
 }
