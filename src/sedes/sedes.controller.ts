@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body } from '@nestjs/common';
 import { SedesService } from './sedes.service';
 import { CreateSedeDto } from './dto/create-sede.dto';
 
@@ -9,5 +9,10 @@ export class SedesController {
   @Post()
   create(@Body() dto: CreateSedeDto) {
     return this.sedesService.create(dto);
+  }
+
+  @Get()
+  findAll() {
+    return this.sedesService.findAll(); // asegúrate de que este método existe en el service
   }
 }

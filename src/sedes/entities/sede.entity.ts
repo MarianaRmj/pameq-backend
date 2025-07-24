@@ -1,5 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToMany,
+} from 'typeorm';
 import { Institution } from 'src/institutions/entities/institution.entity';
+import { Ciclo } from 'src/cycles/entities/cycle.entity';
 
 @Entity()
 export class Sede {
@@ -23,4 +30,7 @@ export class Sede {
 
   @ManyToOne(() => Institution, (institution) => institution.sedes)
   institution: Institution;
+
+  @OneToMany(() => Ciclo, (ciclo) => ciclo.sede)
+  ciclos: Ciclo[];
 }

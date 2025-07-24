@@ -26,47 +26,28 @@ export class InstitutionSedeSeeder {
         codigo_habilitacion: 'FD-001',
         nombre_representante: 'Adriana Gómez',
         nivel_complejidad: 'Media',
+        enfoque: 'Acreditacion',
         sedes: [
           {
-            nombre_sede: 'Sede A',
-            direccion: 'Medellín - Cra. 50',
+            nombre_sede: '1',
+            direccion: 'Medellín - Cra. 34',
             telefono: '6041111111',
-            nombre_lider: 'Lina Pérez',
+            nombre_lider: 'Marcela Pérez',
             codigo_habilitacion: 'FD-S01',
           },
           {
-            nombre_sede: 'Sede B',
+            nombre_sede: '2',
             direccion: 'Medellín - Cl. 20',
-            telefono: '6042222222',
+            telefono: '6042222223',
             nombre_lider: 'Carlos Ruiz',
             codigo_habilitacion: 'FD-S02',
           },
-        ],
-      },
-      {
-        nombre_ips: 'Clínica PAMEQ',
-        nit: '901987654-3',
-        tipo_institucion: 'Privada',
-        correo_contacto: 'admin@gmail.com',
-        direccion_principal: 'Av. 68 #30',
-        telefono: '6015555555',
-        codigo_habilitacion: 'CP-001',
-        nombre_representante: 'Luis Martínez',
-        nivel_complejidad: 'Alta',
-        sedes: [
           {
-            nombre_sede: 'Sede Bogotá',
-            direccion: 'Bogotá - Calle 80',
-            telefono: '6011234567',
-            nombre_lider: 'Paula Ríos',
-            codigo_habilitacion: 'CP-BG01',
-          },
-          {
-            nombre_sede: 'Sede Cali',
-            direccion: 'Cali - Av. 3N',
-            telefono: '6028765432',
-            nombre_lider: 'Andrés Vargas',
-            codigo_habilitacion: 'CP-CL01',
+            nombre_sede: 'A',
+            direccion: 'Medellín - Cl. 90',
+            telefono: '6042222221',
+            nombre_lider: 'Alfonso Ruiz',
+            codigo_habilitacion: 'FD-S03',
           },
         ],
       },
@@ -78,7 +59,19 @@ export class InstitutionSedeSeeder {
       });
 
       if (!institution) {
-        institution = this.institutionRepo.create(instData);
+        institution = this.institutionRepo.create({
+          nombre_ips: instData.nombre_ips,
+          nit: instData.nit,
+          tipo_institucion: instData.tipo_institucion,
+          correo_contacto: instData.correo_contacto,
+          direccion_principal: instData.direccion_principal,
+          telefono: instData.telefono,
+          codigo_habilitacion: instData.codigo_habilitacion,
+          nombre_representante: instData.nombre_representante,
+          nivel_complejidad: instData.nivel_complejidad,
+          enfoque: instData.enfoque,
+        });
+
         institution = await this.institutionRepo.save(institution);
         console.log(`✅ Institución creada: ${institution.nombre_ips}`);
       } else {

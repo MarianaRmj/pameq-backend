@@ -4,6 +4,7 @@ import { loggerGlobal } from './middleware/logger.middleware';
 import { SeedModule } from './seeders/seed.module';
 import { UserAdminSeeder } from './seeders/user-admin.seeder';
 import { InstitutionSedeSeeder } from './seeders/institution-sede.seeder';
+import { CycleSeeder } from './seeders/ciclo.seeder';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -19,10 +20,13 @@ async function bootstrap() {
   const seedModule = app.select(SeedModule);
 
   const institutionSeeder = seedModule.get(InstitutionSedeSeeder);
-  await institutionSeeder.run();
+  await institutionSeeder.run(); // ✅ Primero instituciones y sedes
+
+  const cycleSeeder = seedModule.get(CycleSeeder);
+  await cycleSeeder.run(); // ✅ Luego ciclos con sedes existentes
 
   const userSeeder = seedModule.get(UserAdminSeeder);
-  await userSeeder.run();
+  await userSeeder.run(); // ✅ Luego usuario
 
   await app.listen(process.env.PORT || 3001);
 }
