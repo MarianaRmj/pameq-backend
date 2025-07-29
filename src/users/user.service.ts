@@ -57,12 +57,32 @@ export class UserService {
     });
   }
 
-  async findAll(): Promise<User[]> {
-    return this.usersRepository.find({ relations: ['sede'] });
+  async findAll(page: number = 1, limit: number = 10) {
+    const [users, total] = await this.usersRepository.findAndCount({
+      relations: ['sede'],
+      select: ['id', 'nombre', 'email', 'rol', 'sede'],
+      skip: (page - 1) * limit,
+      take: limit,
+    });
+
+    const usersWithSedeName = users.map((user) => ({
+      ...user,
+      sedeNombre: user.sede?.nombre_sede || null,
+    }));
+
+    return {
+      users: usersWithSedeName,
+      total,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: number): Promise<User | null> {
-    return this.usersRepository.findOne({ where: { id }, relations: ['sede'] });
+    return this.usersRepository.findOne({
+      where: { id },
+      relations: ['sede'],
+    });
   }
 
   async updateUser(id: number, dto: UpdateUserDto): Promise<User> {
