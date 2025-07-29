@@ -4,7 +4,7 @@ export class UserResponseDto {
   email: string;
   rol: string;
   sedeId: number | null;
-  sedeNombre?: string;
+  nombre_sede?: string | null;
   created_at: Date;
   updated_at: Date;
 }
