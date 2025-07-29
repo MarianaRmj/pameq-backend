@@ -4,12 +4,15 @@ import { Repository } from 'typeorm';
 import { Institution } from './entities/institution.entity';
 import { CreateInstitutionDto } from './dto/create-institution.dto';
 import { UpdateInstitutionDto } from './dto/update-institution.dto';
+import { Ciclo } from 'src/cycles/entities/cycle.entity';
 
 @Injectable()
 export class InstitutionsService {
   constructor(
     @InjectRepository(Institution)
     private readonly institutionRepo: Repository<Institution>,
+    @InjectRepository(Ciclo)
+    private readonly cicloRepo: Repository<Ciclo>,
   ) {}
 
   async create(data: CreateInstitutionDto) {
@@ -52,5 +55,14 @@ export class InstitutionsService {
       relations: ['ciclos', 'ciclos.sede'], // incluir sede si deseas mostrar nombre
     });
     return institution?.ciclos ?? [];
+  }
+
+  async deleteCiclo(id: number): Promise<void> {
+    const ciclo = await this.cicloRepo.findOne({ where: { id } });
+    if (!ciclo) {
+      throw new NotFoundException(`Ciclo con ID ${id} no encontrado`);
+    }
+
+    await this.cicloRepo.remove(ciclo); // o delete({ id }) si prefieres
   }
 }

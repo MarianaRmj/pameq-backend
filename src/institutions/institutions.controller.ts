@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   ParseIntPipe,
+  Delete,
 } from '@nestjs/common';
 import { InstitutionsService } from './institutions.service';
 import { CreateInstitutionDto } from './dto/create-institution.dto';
@@ -36,7 +37,7 @@ export class InstitutionsController {
       return updated;
     } catch (error) {
       console.error('❌ Error en InstitutionsController.update:', error);
-      throw error; // o usa HttpException si quieres personalizar el mensaje
+      throw error;
     }
   }
 
@@ -48,5 +49,16 @@ export class InstitutionsController {
   @Get(':id/ciclos')
   findCiclos(@Param('id', ParseIntPipe) id: number) {
     return this.institutionService.findCiclosByInstitution(id);
+  }
+
+  @Delete('ciclos/:id')
+  async deleteCiclo(@Param('id', ParseIntPipe) id: number) {
+    try {
+      await this.institutionService.deleteCiclo(id);
+      return { message: 'Ciclo eliminado correctamente' };
+    } catch (error) {
+      console.error('❌ Error eliminando ciclo:', error);
+      throw error;
+    }
   }
 }
