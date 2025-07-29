@@ -1,4 +1,3 @@
-// src/users/users.controller.ts
 import {
   Controller,
   Get,
@@ -8,6 +7,7 @@ import {
   Param,
   ParseIntPipe,
   NotFoundException,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -20,9 +20,18 @@ export class UsersController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.userService.findAll();
-    return users.map(toUserResponseDto);
+  async getUsers(
+    @Query('page', ParseIntPipe) page: number = 1,
+    @Query('limit', ParseIntPipe) limit: number = 10,
+  ) {
+    const { users, total, currentPage, totalPages } =
+      await this.userService.findAll(page, limit);
+    return {
+      users,
+      total,
+      currentPage,
+      totalPages,
+    };
   }
 
   @Get(':id')
