@@ -5,10 +5,12 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Sede } from 'src/sedes/entities/sede.entity';
 import { Institution } from 'src/institutions/entities/institution.entity';
 import { CicloEstado } from '../enums/ciclo-estado.enum';
+import { Event } from 'src/event/entities/event.entity';
 
 @Entity()
 export class Ciclo {
@@ -43,4 +45,7 @@ export class Ciclo {
     nullable: false,
   })
   institution: Institution;
+
+  @OneToMany(() => Event, (event) => event.ciclo)
+  events: Event[];
 }
