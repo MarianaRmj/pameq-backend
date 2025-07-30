@@ -6,8 +6,10 @@ import {
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { Sede } from 'src/sedes/entities/sede.entity';
+import { Event } from 'src/event/entities/event.entity';
 
 @Entity({ name: 'usuarios' })
 export class User {
@@ -27,7 +29,7 @@ export class User {
   rol: string;
 
   @ManyToOne(() => Sede, { nullable: true })
-  @JoinColumn({ name: 'sede_id' }) // Nombre explícito de la columna FK
+  @JoinColumn({ name: 'sede_id' })
   sede?: Sede;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -41,4 +43,7 @@ export class User {
 
   @Column({ type: 'timestamp', nullable: true })
   resetPasswordExpires: Date | null;
+
+  @OneToMany(() => Event, (event) => event.user)
+  events: Event[];
 }

@@ -13,6 +13,7 @@ import { InstitutionsModule } from './institutions/institutions.module';
 import { SedesModule } from './sedes/sedes.module';
 import { SeedModule } from './seeders/seed.module';
 import { CyclesModule } from './cycles/cycles.module';
+import { EventsModule } from './event/event.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { CyclesModule } from './cycles/cycles.module';
     SedesModule,
     SeedModule,
     CyclesModule,
+    EventsModule,
   ],
 })
 export class AppModule {}
