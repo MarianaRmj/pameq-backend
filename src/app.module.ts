@@ -14,6 +14,7 @@ import { SedesModule } from './sedes/sedes.module';
 import { SeedModule } from './seeders/seed.module';
 import { CyclesModule } from './cycles/cycles.module';
 import { EventsModule } from './event/event.module';
+import { ScheduleModule } from './schedule/schedule.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { EventsModule } from './event/event.module';
     SeedModule,
     CyclesModule,
     EventsModule,
+    ScheduleModule,
   ],
 })
 export class AppModule {}

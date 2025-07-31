@@ -8,7 +8,7 @@ import {
 import { User } from 'src/users/entities/user.entity';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
 
-@Entity()
+@Entity('eventos')
 export class Event {
   @PrimaryGeneratedColumn()
   id: number;
