@@ -10,6 +10,7 @@ import { CreateCicloDto } from './dto/create-cycle.dto';
 import { Sede } from 'src/sedes/entities/sede.entity';
 import { Institution } from 'src/institutions/entities/institution.entity';
 import { UpdateCicloDto } from './dto/update-cycle.dto';
+import { Event } from 'src/event/entities/event.entity';
 
 @Injectable()
 export class CyclesService {
@@ -22,6 +23,9 @@ export class CyclesService {
 
     @InjectRepository(Institution)
     private readonly institutionRepo: Repository<Institution>,
+
+    @InjectRepository(Event)
+    private readonly eventRepo: Repository<Event>,
   ) {}
 
   async create(createCicloDto: CreateCicloDto) {
@@ -56,7 +60,19 @@ export class CyclesService {
       institution,
     });
 
-    return this.cicloRepo.save(ciclo);
+    const savedCiclo = await this.cicloRepo.save(ciclo);
+
+    await this.eventRepo.save({
+      titulo: `Ciclo ${savedCiclo.enfoque || ''} - ${sede.nombre_sede || ''}`,
+      descripcion: createCicloDto.observaciones || 'Ciclo institucional',
+      tipo: 'ciclo',
+      inicio: createCicloDto.fecha_inicio,
+      fin: createCicloDto.fecha_fin,
+      ciclo: savedCiclo,
+      user: { id: 1 },
+    });
+
+    return savedCiclo;
   }
 
   findAll(): Promise<Ciclo[]> {
@@ -92,10 +108,24 @@ export class CyclesService {
 
     Object.assign(ciclo, dto);
 
-    return this.cicloRepo.save(ciclo);
+    const updatedCiclo = await this.cicloRepo.save(ciclo);
+
+    const event = await this.eventRepo.findOne({ where: { ciclo: { id } } });
+    if (event) {
+      event.titulo = `Ciclo ${updatedCiclo.enfoque || ''} - ${updatedCiclo.sede?.nombre_sede || ''}`;
+      event.descripcion = dto.observaciones || 'Ciclo institucional';
+      event.inicio = new Date(dto.fecha_inicio || updatedCiclo.fecha_inicio);
+      event.fin = new Date(dto.fecha_fin || updatedCiclo.fecha_fin);
+      await this.eventRepo.save(event);
+    }
+
+    return updatedCiclo;
   }
 
   async remove(id: number): Promise<void> {
+    // Elimina primero el evento relacionado si existe
+    await this.eventRepo.delete({ ciclo: { id } });
+    // Ahora elimina el ciclo
     const result = await this.cicloRepo.delete(id);
     if (result.affected === 0) {
       throw new NotFoundException('Ciclo no encontrado');
