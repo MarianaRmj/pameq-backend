@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Sede } from 'src/sedes/entities/sede.entity';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
 
-@Entity()
+@Entity('institucion')
 export class Institution {
   @PrimaryGeneratedColumn()
   id: number;

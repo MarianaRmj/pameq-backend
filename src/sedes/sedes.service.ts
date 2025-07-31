@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Sede } from './entities/sede.entity';
@@ -57,5 +61,22 @@ export class SedesService {
 
     Object.assign(sede, data);
     return this.sedeRepo.save(sede);
+  }
+
+  async remove(id: number) {
+    const sede = await this.sedeRepo.findOne({
+      where: { id },
+      relations: ['ciclos'],
+    });
+    if (!sede) {
+      throw new NotFoundException(`Sede con ID ${id} no encontrada.`);
+    }
+    if (sede.ciclos && sede.ciclos.length > 0) {
+      throw new BadRequestException(
+        'No se puede eliminar la sede porque tiene ciclos asociados.',
+      );
+    }
+    await this.sedeRepo.remove(sede);
+    return { message: 'Sede eliminada correctamente' };
   }
 }

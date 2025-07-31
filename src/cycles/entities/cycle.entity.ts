@@ -12,7 +12,7 @@ import { Institution } from 'src/institutions/entities/institution.entity';
 import { CicloEstado } from '../enums/ciclo-estado.enum';
 import { Event } from 'src/event/entities/event.entity';
 
-@Entity()
+@Entity('ciclos')
 export class Ciclo {
   @PrimaryGeneratedColumn()
   id: number;
