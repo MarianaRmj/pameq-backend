@@ -22,7 +22,7 @@ export class ScheduleTask {
   descripcion?: string;
 
   @Column({ type: 'int', nullable: true })
-  duracion?: number; // en días
+  duracion?: number;
 
   @Column({ type: 'date' })
   fecha_comienzo: Date;
@@ -34,10 +34,10 @@ export class ScheduleTask {
   tipo?: 'tarea' | 'hito' | 'resumen';
 
   @Column({ nullable: true })
-  progreso?: number; // % completado
+  progreso?: number;
 
   @Column({ nullable: true })
-  modo?: string; // manual, automático, etc.
+  modo?: string;
 
   @Column({ nullable: true })
   estado?: 'pendiente' | 'en_curso' | 'finalizado';
@@ -46,7 +46,7 @@ export class ScheduleTask {
   observaciones?: string;
 
   @Column({ type: 'simple-array', nullable: true })
-  predecesoras?: string; // IDs de las tareas predecesoras (ej: "4,7,15")
+  predecesoras?: string;
 
   // Relaciones
   @ManyToOne(() => Ciclo, { nullable: false })
