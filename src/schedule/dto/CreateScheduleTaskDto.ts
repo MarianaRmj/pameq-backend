@@ -3,22 +3,13 @@ import {
   IsOptional,
   IsInt,
   IsDateString,
-  IsEnum,
   IsNumber,
-  IsArray,
+  IsEnum,
 } from 'class-validator';
 
 export class CreateScheduleTaskDto {
   @IsString()
   nombre_tarea: string;
-
-  @IsOptional()
-  @IsString()
-  descripcion?: string;
-
-  @IsOptional()
-  @IsInt()
-  duracion?: number; // en días
 
   @IsDateString()
   fecha_comienzo: string;
@@ -27,16 +18,8 @@ export class CreateScheduleTaskDto {
   fecha_fin: string;
 
   @IsOptional()
-  @IsEnum(['tarea', 'hito', 'resumen'])
-  tipo?: 'tarea' | 'hito' | 'resumen';
-
-  @IsOptional()
-  @IsNumber()
-  progreso?: number;
-
-  @IsOptional()
-  @IsString()
-  modo?: string;
+  @IsInt()
+  duracion?: number; // en días
 
   @IsOptional()
   @IsEnum(['pendiente', 'en_curso', 'finalizado'])
@@ -44,11 +27,19 @@ export class CreateScheduleTaskDto {
 
   @IsOptional()
   @IsString()
+  responsable?: string;
+
+  @IsOptional()
+  @IsNumber()
+  progreso?: number;
+
+  @IsOptional()
+  @IsString()
   observaciones?: string;
 
   @IsOptional()
-  @IsArray()
-  predecesoras?: string[];
+  @IsString() // <--- debe ser string, no array
+  predecesoras?: string;
 
   @IsInt()
   cicloId: number;
@@ -60,8 +51,4 @@ export class CreateScheduleTaskDto {
   @IsOptional()
   @IsInt()
   institucionId?: number;
-
-  @IsOptional()
-  @IsInt()
-  responsableId?: number;
 }
