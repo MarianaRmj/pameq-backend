@@ -13,24 +13,22 @@ export class ScheduleTaskService {
   ) {}
 
   async create(dto: CreateScheduleTaskDto): Promise<ScheduleTask> {
-    const task = this.scheduleTaskRepo.create({
-      ...dto,
-      predecesoras: dto.predecesoras ? dto.predecesoras.join(',') : undefined,
-    });
-    return await this.scheduleTaskRepo.save(task); // Esto debe devolver un solo objeto
+    // predecesoras ya es string (puede ser vacío o null)
+    const task = this.scheduleTaskRepo.create({ ...dto });
+    return await this.scheduleTaskRepo.save(task);
   }
 
   async findAll(filters: {
     cicloId?: number;
     sedeId?: number;
     institucionId?: number;
-    responsableId?: number;
+    responsable?: string;
   }): Promise<ScheduleTask[]> {
     const where: FindOptionsWhere<ScheduleTask> = {};
     if (filters.cicloId) where.cicloId = filters.cicloId;
     if (filters.sedeId) where.sedeId = filters.sedeId;
     if (filters.institucionId) where.institucionId = filters.institucionId;
-    if (filters.responsableId) where.responsableId = filters.responsableId;
+    if (filters.responsable) where.responsable = filters.responsable;
     return await this.scheduleTaskRepo.find({ where });
   }
 
@@ -43,12 +41,7 @@ export class ScheduleTaskService {
   async update(id: number, dto: UpdateScheduleTaskDto): Promise<ScheduleTask> {
     const task = await this.scheduleTaskRepo.findOne({ where: { id } });
     if (!task) throw new NotFoundException('Actividad no encontrada');
-    Object.assign(task, {
-      ...dto,
-      predecesoras: dto.predecesoras
-        ? dto.predecesoras.join(',')
-        : task.predecesoras,
-    });
+    Object.assign(task, dto);
     return await this.scheduleTaskRepo.save(task);
   }
 
