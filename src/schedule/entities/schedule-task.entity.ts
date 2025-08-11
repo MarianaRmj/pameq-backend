@@ -3,11 +3,14 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
 import { Sede } from '../../sedes/entities/sede.entity';
 import { Institution } from '../../institutions/entities/institution.entity';
+
+export type EstadoTarea = 'pendiente' | 'en proceso' | 'finalizado';
 
 @Entity('cronograma')
 export class ScheduleTask {
@@ -26,22 +29,42 @@ export class ScheduleTask {
   @Column({ type: 'int', nullable: true })
   duracion?: number;
 
-  @Column({ nullable: true })
-  estado?: 'pendiente' | 'en_curso' | 'finalizado';
+  @Column({
+    type: 'enum',
+    enum: ['pendiente', 'en proceso', 'finalizado'],
+    default: 'pendiente',
+    nullable: true,
+  })
+  estado?: EstadoTarea;
 
   @Column({ nullable: true })
   responsable: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'int', default: 0, nullable: true })
   progreso?: number;
 
   @Column({ nullable: true })
   observaciones?: string;
 
-  @Column({ type: 'simple-array', nullable: true })
-  predecesoras?: string;
+  // ⬇️ Cambiamos a texto plano; el front envía string (ej: "1,3FS,7")
+  @Column({ type: 'text', nullable: true })
+  predecesoras?: string | null;
 
-  // Relaciones
+  // ---- Jerarquía ----
+  @ManyToOne(() => ScheduleTask, (t) => t.children, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'parentId' })
+  parent?: ScheduleTask | null;
+
+  @Column({ type: 'int', nullable: true })
+  parentId?: number | null;
+
+  @OneToMany(() => ScheduleTask, (t) => t.parent)
+  children?: ScheduleTask[];
+
+  // Relaciones existentes
   @ManyToOne(() => Ciclo, { nullable: false })
   @JoinColumn({ name: 'cicloId' })
   ciclo: Ciclo;

@@ -16,6 +16,15 @@ import { Response } from 'express';
 import * as ExcelJS from 'exceljs';
 import * as PDFDocument from 'pdfkit';
 
+const estadoOut = (e?: string) =>
+  e === 'pendiente'
+    ? 'Pendiente'
+    : e === 'en proceso'
+      ? 'En progreso'
+      : e === 'finalizado'
+        ? 'Finalizado'
+        : e;
+
 @Controller('schedule-tasks')
 export class ScheduleTaskController {
   constructor(private readonly scheduleTaskService: ScheduleTaskService) {}
@@ -26,18 +35,20 @@ export class ScheduleTaskController {
   }
 
   @Get()
-  findAll(
-    @Query('cicloId') cicloId?: number,
-    @Query('sedeId') sedeId?: number,
-    @Query('institucionId') institucionId?: number,
+  async findAll(
+    @Query('cicloId') cicloId?: string,
+    @Query('sedeId') sedeId?: string,
+    @Query('institucionId') institucionId?: string,
     @Query('responsable') responsable?: string,
   ) {
-    return this.scheduleTaskService.findAll({
-      cicloId,
-      sedeId,
-      institucionId,
+    const tasks = await this.scheduleTaskService.findAll({
+      cicloId: cicloId ? +cicloId : undefined,
+      sedeId: sedeId ? +sedeId : undefined,
+      institucionId: institucionId ? +institucionId : undefined,
       responsable,
     });
+    // Opcional: devolver estado capitalizado para el front
+    return tasks.map((t) => ({ ...t, estado: estadoOut(t.estado) }));
   }
 
   @Get(':id')
@@ -55,26 +66,26 @@ export class ScheduleTaskController {
     return this.scheduleTaskService.remove(+id);
   }
 
+  // ----- EXPORTS (sin cambios relevantes, solo mapear estado si quieres) -----
+
   @Get('export/excel')
   async exportExcel(
     @Res() res: Response,
-    @Query('cicloId') cicloId?: number,
-    @Query('sedeId') sedeId?: number,
-    @Query('institucionId') institucionId?: number,
+    @Query('cicloId') cicloId?: string,
+    @Query('sedeId') sedeId?: string,
+    @Query('institucionId') institucionId?: string,
     @Query('responsable') responsable?: string,
   ) {
     const tasks = await this.scheduleTaskService.findAll({
-      cicloId,
-      sedeId,
-      institucionId,
+      cicloId: cicloId ? +cicloId : undefined,
+      sedeId: sedeId ? +sedeId : undefined,
+      institucionId: institucionId ? +institucionId : undefined,
       responsable,
     });
 
-    // Crear workbook
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Cronograma');
 
-    // Definir columnas
     worksheet.columns = [
       { header: 'ID', key: 'id', width: 8 },
       { header: 'Tarea', key: 'nombre_tarea', width: 30 },
@@ -88,9 +99,9 @@ export class ScheduleTaskController {
       { header: 'Predecesoras', key: 'predecesoras', width: 15 },
       { header: 'Sede ID', key: 'sedeId', width: 10 },
       { header: 'Institución ID', key: 'institucionId', width: 15 },
+      { header: 'Parent ID', key: 'parentId', width: 10 },
     ];
 
-    // Agregar datos
     tasks.forEach((task) => {
       worksheet.addRow({
         id: task.id,
@@ -102,17 +113,17 @@ export class ScheduleTaskController {
         fecha_fin: task.fecha_fin
           ? new Date(task.fecha_fin).toISOString().split('T')[0]
           : '',
-        estado: task.estado ?? '',
+        estado: estadoOut(task.estado),
         responsable: task.responsable ?? '',
         progreso: task.progreso ?? '',
         observaciones: task.observaciones ?? '',
         predecesoras: task.predecesoras ?? '',
         sedeId: task.sedeId ?? '',
         institucionId: task.institucionId ?? '',
+        parentId: typeof task.parentId !== 'undefined' ? task.parentId : '',
       });
     });
 
-    // Enviar archivo
     res.setHeader(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -129,19 +140,18 @@ export class ScheduleTaskController {
   @Get('export/pdf')
   async exportPDF(
     @Res() res: Response,
-    @Query('cicloId') cicloId?: number,
-    @Query('sedeId') sedeId?: number,
-    @Query('institucionId') institucionId?: number,
+    @Query('cicloId') cicloId?: string,
+    @Query('sedeId') sedeId?: string,
+    @Query('institucionId') institucionId?: string,
     @Query('responsable') responsable?: string,
   ) {
     const tasks = await this.scheduleTaskService.findAll({
-      cicloId,
-      sedeId,
-      institucionId,
+      cicloId: cicloId ? +cicloId : undefined,
+      sedeId: sedeId ? +sedeId : undefined,
+      institucionId: institucionId ? +institucionId : undefined,
       responsable,
     });
 
-    // Crear PDF
     const doc = new PDFDocument({ margin: 30, size: 'A4' });
 
     res.setHeader('Content-Type', 'application/pdf');
@@ -152,7 +162,6 @@ export class ScheduleTaskController {
     doc.fontSize(16).text('Cronograma de Actividades', { align: 'center' });
     doc.moveDown();
 
-    // Cabecera de tabla
     doc.fontSize(10);
     const headers = [
       'ID',
@@ -167,6 +176,7 @@ export class ScheduleTaskController {
       'Predecesoras',
       'SedeID',
       'InstituciónID',
+      'ParentID',
     ];
     doc.text(headers.join(' | '));
     doc.moveDown(0.5);
@@ -183,13 +193,14 @@ export class ScheduleTaskController {
           task.fecha_fin
             ? new Date(task.fecha_fin).toISOString().split('T')[0]
             : '',
-          task.estado ?? '',
+          estadoOut(task.estado),
           task.responsable ?? '',
           task.progreso ?? '',
           task.observaciones ?? '',
           task.predecesoras ?? '',
           task.sedeId ?? '',
           task.institucionId ?? '',
+          task.parentId ?? '',
         ].join(' | '),
       );
       doc.moveDown(0.2);
