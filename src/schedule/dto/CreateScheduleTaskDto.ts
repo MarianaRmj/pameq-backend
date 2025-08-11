@@ -19,11 +19,11 @@ export class CreateScheduleTaskDto {
 
   @IsOptional()
   @IsInt()
-  duracion?: number; // en días
+  duracion?: number;
 
   @IsOptional()
-  @IsEnum(['pendiente', 'en_curso', 'finalizado'])
-  estado?: 'pendiente' | 'en_curso' | 'finalizado';
+  @IsEnum(['pendiente', 'en proceso', 'finalizado'])
+  estado?: 'pendiente' | 'en proceso' | 'finalizado';
 
   @IsOptional()
   @IsString()
@@ -37,8 +37,9 @@ export class CreateScheduleTaskDto {
   @IsString()
   observaciones?: string;
 
+  // string plano (ej: "1,3FS,7")
   @IsOptional()
-  @IsString() // <--- debe ser string, no array
+  @IsString()
   predecesoras?: string;
 
   @IsInt()
@@ -51,4 +52,9 @@ export class CreateScheduleTaskDto {
   @IsOptional()
   @IsInt()
   institucionId?: number;
+
+  // ⬇️ NUEVO
+  @IsOptional()
+  @IsInt()
+  parentId?: number;
 }
