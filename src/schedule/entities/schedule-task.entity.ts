@@ -31,7 +31,7 @@ export class ScheduleTask {
 
   @Column({
     type: 'enum',
-    enum: ['pendiente', 'en proceso', 'finalizado'],
+    enum: ['pendiente', 'en_curso', 'finalizado'],
     default: 'pendiente',
     nullable: true,
   })
@@ -49,6 +49,14 @@ export class ScheduleTask {
   // ⬇️ Cambiamos a texto plano; el front envía string (ej: "1,3FS,7")
   @Column({ type: 'text', nullable: true })
   predecesoras?: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: ['baja', 'media', 'alta'],
+    default: 'media',
+    nullable: true,
+  })
+  prioridad?: 'baja' | 'media' | 'alta';
 
   // ---- Jerarquía ----
   @ManyToOne(() => ScheduleTask, (t) => t.children, {

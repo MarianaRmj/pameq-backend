@@ -14,12 +14,12 @@ import { CreateScheduleTaskDto } from './dto/CreateScheduleTaskDto';
 import { UpdateScheduleTaskDto } from './dto/UpdateScheduleTaskDto';
 import { Response } from 'express';
 import * as ExcelJS from 'exceljs';
-import * as PDFDocument from 'pdfkit';
+import PDFDocument from 'pdfkit';
 
 const estadoOut = (e?: string) =>
   e === 'pendiente'
     ? 'Pendiente'
-    : e === 'en proceso'
+    : e === 'en_curso'
       ? 'En progreso'
       : e === 'finalizado'
         ? 'Finalizado'

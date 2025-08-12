@@ -15,6 +15,9 @@ import { SeedModule } from './seeders/seed.module';
 import { CyclesModule } from './cycles/cycles.module';
 import { EventsModule } from './event/event.module';
 import { ScheduleModule } from './schedule/schedule.module';
+import { ActivitiesModule } from './activity/activity.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import * as path from 'path';
 
 @Module({
   imports: [
@@ -26,6 +29,10 @@ import { ScheduleModule } from './schedule/schedule.module';
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.get('typeorm')!,
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: path.join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
     }),
     JwtModule.registerAsync({
       global: true,
@@ -53,6 +60,7 @@ import { ScheduleModule } from './schedule/schedule.module';
     CyclesModule,
     EventsModule,
     ScheduleModule,
+    ActivitiesModule,
   ],
 })
 export class AppModule {}

@@ -22,18 +22,29 @@ function toDateOrNull(v?: string): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
-function normalizeEstado(
-  input?: string,
-): 'pendiente' | 'en proceso' | 'finalizado' | undefined {
+export type EstadoCanon = 'pendiente' | 'en_curso' | 'finalizado';
+
+export function normalizeEstado(input?: string): EstadoCanon | undefined {
   if (!input) return undefined;
-  const map: Record<string, 'pendiente' | 'en proceso' | 'finalizado'> = {
-    Pendiente: 'pendiente',
-    Finalizado: 'finalizado',
+  const s = input.toLowerCase().trim().replace(/\s+/g, ' '); // normaliza espacios
+
+  const map: Record<string, EstadoCanon> = {
+    // Comunes del front
     pendiente: 'pendiente',
-    en_proceso: 'en proceso',
+    'en progreso': 'en_curso',
+    'en proceso': 'en_curso',
+
+    // Con guion bajo
+    en_curso: 'en_curso',
+    en_progreso: 'en_curso',
+    en_proceso: 'en_curso',
+
+    // Finalizado (acepta femenino por si acaso)
     finalizado: 'finalizado',
+    finalizada: 'finalizado',
   };
-  return map[input] ?? undefined;
+
+  return map[s];
 }
 // -------------------------------------------
 
@@ -55,7 +66,13 @@ export class ScheduleTaskService {
       ...dto,
       fecha_comienzo: fc,
       fecha_fin: ff,
-      estado: normalizeEstado(dto.estado),
+      estado: (() => {
+        const normalized = normalizeEstado(dto.estado);
+        if (normalized === 'en_curso') return 'en proceso';
+        if (normalized === 'pendiente' || normalized === 'finalizado')
+          return normalized;
+        return undefined;
+      })(),
       predecesoras: dto.predecesoras?.trim() ? dto.predecesoras : null,
       parentId:
         (typeof dto === 'object' &&
@@ -82,7 +99,7 @@ export class ScheduleTaskService {
       where.institucionId = Number(filters.institucionId);
     if (filters.responsable) where.responsable = filters.responsable;
 
-    return await this.scheduleTaskRepo.find({ where });
+    return await this.scheduleTaskRepo.find({ where, order: { id: 'ASC' } });
   }
 
   async findOne(id: number): Promise<ScheduleTask> {
@@ -107,15 +124,21 @@ export class ScheduleTaskService {
 
     // convertir string -> Date si vienen en DTO
     if (dto.fecha_comienzo !== undefined) {
-      toAssign.fecha_comienzo = toDateOrUndefined(dto.fecha_comienzo);
+      const fc = toDateOrUndefined(dto.fecha_comienzo);
+      if (!fc) throw new BadRequestException('fecha_comienzo inválida');
+      toAssign.fecha_comienzo = fc;
     }
     if (dto.fecha_fin !== undefined) {
-      toAssign.fecha_fin = toDateOrUndefined(dto.fecha_fin);
+      const ff = toDateOrUndefined(dto.fecha_fin);
+      if (!ff) throw new BadRequestException('fecha_fin inválida');
+      toAssign.fecha_fin = ff;
     }
 
     // normalizar estado
     if (dto.estado !== undefined) {
-      toAssign.estado = normalizeEstado(dto.estado);
+      const normalizedEstado = normalizeEstado(dto.estado);
+      toAssign.estado =
+        normalizedEstado === 'en_curso' ? 'en proceso' : normalizedEstado;
     }
 
     // normalizar predecesoras (string o null)
@@ -127,11 +150,12 @@ export class ScheduleTaskService {
 
     // jerarquía
     if (dto?.parentId !== undefined) {
-      const v = dto.parentId;
-      toAssign.parentId =
-        (typeof v === 'string' && (v === '' || v === 'null')) || v == null
-          ? null
-          : Number(v);
+      const v = dto.parentId as unknown;
+      const pid = v === '' || v === 'null' || v == null ? null : Number(v);
+      if (pid !== null && Number.isNaN(pid)) {
+        throw new BadRequestException('parentId inválido');
+      }
+      toAssign.parentId = pid;
     }
 
     // filtros opcionales

@@ -8,7 +8,7 @@ import { User } from 'src/users/entities/user.entity';
 import { MoreThan, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import * as bcrypt from 'bcryptjs';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { RecoverMailService } from './RecoverMailService';
 
 @Injectable()

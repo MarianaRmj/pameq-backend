@@ -4,7 +4,7 @@ import {
   IsInt,
   IsDateString,
   IsNumber,
-  IsEnum,
+  IsIn,
 } from 'class-validator';
 
 export class CreateScheduleTaskDto {
@@ -22,8 +22,8 @@ export class CreateScheduleTaskDto {
   duracion?: number;
 
   @IsOptional()
-  @IsEnum(['pendiente', 'en proceso', 'finalizado'])
-  estado?: 'pendiente' | 'en proceso' | 'finalizado';
+  @IsIn(['pendiente', 'en_curso', 'finalizado'])
+  estado?: 'pendiente' | 'en_curso' | 'finalizado';
 
   @IsOptional()
   @IsString()
@@ -57,4 +57,8 @@ export class CreateScheduleTaskDto {
   @IsOptional()
   @IsInt()
   parentId?: number;
+
+  @IsOptional()
+  @IsIn(['baja', 'media', 'alta'])
+  prioridad?: 'baja' | 'media' | 'alta';
 }
