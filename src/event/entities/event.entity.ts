@@ -4,11 +4,16 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { User } from 'src/users/entities/user.entity';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
 
 @Entity('eventos')
+@Index(['refType', 'refId'], {
+  unique: true,
+  where: '"refType" IS NOT NULL AND "refId" IS NOT NULL',
+})
 export class Event {
   @PrimaryGeneratedColumn()
   id: number;
@@ -43,4 +48,7 @@ export class Event {
 
   @Column({ nullable: true })
   cicloId?: number;
+
+  @Column({ nullable: true }) refType?: 'activity'; // null en manuales
+  @Column({ nullable: true }) refId?: number; // null en manuales
 }

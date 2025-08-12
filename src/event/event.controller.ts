@@ -1,4 +1,3 @@
-// src/events/events.controller.ts
 import {
   Controller,
   Get,
@@ -7,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { EventsService } from './event.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -16,28 +16,26 @@ import { UpdateEventDto } from './dto/update-event.dto';
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
 
-  @Post()
-  create(@Body() dto: CreateEventDto) {
+  @Post() create(@Body() dto: CreateEventDto) {
     return this.eventsService.create(dto);
   }
-
-  @Get()
-  findAll() {
+  @Get() findAll() {
     return this.eventsService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
+  // 🔥 NUEVO: feed para FullCalendar (acepta ?start=&end=)
+  @Get('feed/calendar')
+  feed(@Query('start') start?: string, @Query('end') end?: string) {
+    return this.eventsService.feed(start, end);
+  }
+
+  @Get(':id') findOne(@Param('id') id: string) {
     return this.eventsService.findOne(+id);
   }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateEventDto) {
+  @Patch(':id') update(@Param('id') id: string, @Body() dto: UpdateEventDto) {
     return this.eventsService.update(+id, dto);
   }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
+  @Delete(':id') remove(@Param('id') id: string) {
     return this.eventsService.remove(+id);
   }
 }

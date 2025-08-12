@@ -1,9 +1,9 @@
 export class CreateEventDto {
-  title: string;
-  description?: string;
-  start: Date;
-  end: Date;
-  type?: string;
+  titulo: string;
+  descripcion?: string;
+  inicio: Date | string;
+  fin: Date | string;
+  tipo?: string; // 'manual' | 'actividad' | 'reunion' | 'ciclo'
   userId: number;
   cicloId?: number;
 }

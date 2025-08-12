@@ -1,3 +1,4 @@
+// src/activity/activity.service.ts
 import {
   BadRequestException,
   Injectable,
@@ -16,6 +17,7 @@ import { Institution } from 'src/institutions/entities/institution.entity';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
 import { Sede } from 'src/sedes/entities/sede.entity';
 import { User } from 'src/users/entities/user.entity';
+import { EventsService } from 'src/event/event.service';
 
 // Helpers para evitar "unsafe" en ESLint
 type UploadedFile = Pick<
@@ -52,6 +54,7 @@ export class ActivitiesService {
     @InjectRepository(Sede) private sedeRepo: Repository<Sede>,
     @InjectRepository(Ciclo) private cicloRepo: Repository<Ciclo>,
     @InjectRepository(User) private userRepo: Repository<User>,
+    private readonly eventsService: EventsService, // 👈 inyectado
   ) {}
 
   // helper simple
@@ -118,7 +121,22 @@ export class ActivitiesService {
       activity.procesos_invitados = procesos;
     }
 
-    return this.repo.save(activity);
+    const saved = await this.repo.save(activity);
+
+    // 🔗 crea/actualiza evento del calendario
+    await this.eventsService.upsertFromActivity({
+      id: saved.id,
+      nombre_actividad: saved.nombre_actividad,
+      descripcion: saved.descripcion,
+      fecha_inicio: saved.fecha_inicio,
+      fecha_fin: saved.fecha_fin,
+      responsableId: saved.responsableId,
+      cicloId: saved.cicloId,
+      estado: saved.estado,
+      lugar: saved.lugar,
+    });
+
+    return this.findOne(saved.id);
   }
 
   async update(id: number, dto: UpdateActivityDto) {
@@ -169,7 +187,22 @@ export class ActivitiesService {
     }
 
     Object.assign(a, { ...dto, procesosIds: undefined });
-    return this.repo.save(a);
+    const updated = await this.repo.save(a);
+
+    // 🔗 refleja cambios en el calendario
+    await this.eventsService.upsertFromActivity({
+      id: updated.id,
+      nombre_actividad: updated.nombre_actividad,
+      descripcion: updated.descripcion,
+      fecha_inicio: updated.fecha_inicio,
+      fecha_fin: updated.fecha_fin,
+      responsableId: updated.responsableId,
+      cicloId: updated.cicloId,
+      estado: updated.estado,
+      lugar: updated.lugar,
+    });
+
+    return updated;
   }
 
   async findAll(filters: FilterActivityDto) {
@@ -208,6 +241,8 @@ export class ActivitiesService {
   async remove(id: number) {
     const a = await this.findOne(id);
     await this.repo.remove(a);
+    // 🧹 borra el evento del calendario asociado
+    await this.eventsService.deleteByRef('activity', id);
     return { deleted: true };
   }
 
