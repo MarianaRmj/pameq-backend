@@ -14,6 +14,11 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# Claves GCP locales
+drive-sa.json
+*.gcp-sa.json
+
+
 # OS
 .DS_Store
 
@@ -57,3 +62,4 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 node_modules
+drive-sa.json
