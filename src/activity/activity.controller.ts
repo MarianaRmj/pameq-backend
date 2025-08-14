@@ -16,35 +16,18 @@ import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 import { FilterActivityDto } from './dto/filter-activity.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
+import { memoryStorage } from 'multer';
 import type { StorageEngine } from 'multer';
-import * as path from 'path';
-import { v4 as uuid } from 'uuid';
-import type { Request, Express } from 'express';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Process } from './entities/process.entity';
 import { Repository } from 'typeorm';
 
 // Storage de evidencias
-function evidenceStorage(): StorageEngine {
-  return diskStorage({
-    destination: (
-      _req: Request,
-      _file: Express.Multer.File,
-      cb: (error: Error | null, destination: string) => void,
-    ): void => {
-      cb(null, path.join(process.cwd(), 'uploads', 'activities'));
-    },
-    filename: (
-      _req: Request,
-      file: Express.Multer.File,
-      cb: (error: Error | null, filename: string) => void,
-    ): void => {
-      const ext: string = path.extname(file.originalname);
-      cb(null, `${uuid()}${ext}`);
-    },
-  });
+
+function evidenceMemoryStorage(): StorageEngine {
+  return memoryStorage();
 }
+
 @Controller('activities')
 export class ActivitiesController {
   constructor(
@@ -83,13 +66,13 @@ export class ActivitiesController {
 
   @Post(':id/evidences')
   @UseInterceptors(
-    FilesInterceptor('files', 10, { storage: evidenceStorage() }),
+    FilesInterceptor('files', 10, { storage: evidenceMemoryStorage() }),
   )
   uploadEvidences(
     @Param('id', ParseIntPipe) id: number,
-    @UploadedFiles() files: unknown, // Si prefieres: Express.Multer.File[]
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.service.addEvidences(id, files);
+    return this.service.addEvidences(id, files); // ahora sí usamos los buffers
   }
 
   @Delete(':id/evidences/:evidenceId')

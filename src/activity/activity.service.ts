@@ -12,36 +12,21 @@ import { Evidence } from './entities/evidence.entity';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
 import { FilterActivityDto } from './dto/filter-activity.dto';
-import * as path from 'path';
 import { Institution } from 'src/institutions/entities/institution.entity';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
 import { Sede } from 'src/sedes/entities/sede.entity';
 import { User } from 'src/users/entities/user.entity';
 import { EventsService } from 'src/event/event.service';
+import { GoogleDriveService } from 'src/storage/google-drive.service';
 
 // Helpers para evitar "unsafe" en ESLint
-type UploadedFile = Pick<
-  Express.Multer.File,
-  'filename' | 'originalname' | 'mimetype' | 'size'
->;
 
-function isUploadedFileArray(x: unknown): x is UploadedFile[] {
-  return (
-    Array.isArray(x) &&
-    x.every(
-      (f) =>
-        f &&
-        typeof f === 'object' &&
-        'filename' in f &&
-        typeof (f as { filename: unknown }).filename === 'string' &&
-        'originalname' in f &&
-        typeof (f as { originalname: unknown }).originalname === 'string' &&
-        'mimetype' in f &&
-        typeof (f as { mimetype: unknown }).mimetype === 'string' &&
-        'size' in f &&
-        typeof (f as { size: unknown }).size === 'number',
-    )
-  );
+function safeRemoteName(original: string) {
+  const base = original
+    .normalize('NFKD')
+    .replace(/[^\w.\-()\s]/g, '')
+    .trim();
+  return base || `evidencia-${Date.now()}`;
 }
 
 @Injectable()
@@ -54,7 +39,8 @@ export class ActivitiesService {
     @InjectRepository(Sede) private sedeRepo: Repository<Sede>,
     @InjectRepository(Ciclo) private cicloRepo: Repository<Ciclo>,
     @InjectRepository(User) private userRepo: Repository<User>,
-    private readonly eventsService: EventsService, // 👈 inyectado
+    private readonly eventsService: EventsService,
+    private readonly drive: GoogleDriveService,
   ) {}
 
   // helper simple
@@ -246,29 +232,54 @@ export class ActivitiesService {
     return { deleted: true };
   }
 
-  async addEvidences(
-    activityId: number,
-    files: unknown,
-    publicPrefix = '/uploads',
-  ) {
-    if (!isUploadedFileArray(files) || files.length === 0) {
+  async addEvidences(activityId: number, files: unknown) {
+    if (!Array.isArray(files) || files.length === 0) {
       throw new BadRequestException('No se enviaron archivos válidos');
     }
-    const safeFiles: UploadedFile[] = files;
+
     const a = await this.findOne(activityId);
 
-    const evidences = safeFiles.map((file) =>
-      this.evidenceRepo.create({
-        activityId: a.id,
-        filename: file.filename,
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        size: file.size,
-        url: path.posix.join(publicPrefix, 'activities', file.filename),
-      }),
+    // 👉 Usuario que “poseerá” los archivos en su Drive
+    const ownerUserId = Number(
+      process.env.GOOGLE_OAUTH_OWNER_USER_ID ?? a.responsableId ?? 1,
     );
 
-    await this.evidenceRepo.save(evidences);
+    // 1) Carpeta por actividad en el Drive del usuario
+    const folderName =
+      `ACT-${String(a.id).padStart(6, '0')} - ${a.nombre_actividad}`.slice(
+        0,
+        200,
+      );
+
+    // 👇 Cambia: ahora pasamos ownerUserId
+    const folderId = await this.drive.ensureFolder(ownerUserId, folderName);
+
+    // 2) Subir cada archivo
+    const uploaded: Evidence[] = [];
+    for (const file of files as Express.Multer.File[]) {
+      const remoteName = safeRemoteName(file.originalname);
+
+      // 👇 Cambia: ahora pasamos ownerUserId
+      const up = await this.drive.uploadBuffer(ownerUserId, {
+        buffer: file.buffer,
+        filename: remoteName,
+        mimeType: file.mimetype,
+        parentId: folderId,
+      });
+
+      uploaded.push(
+        this.evidenceRepo.create({
+          activityId: a.id,
+          filename: up.name,
+          originalName: file.originalname,
+          mimeType: up.mimeType ?? file.mimetype,
+          size: up.size || file.size,
+          url: up.webViewLink || up.webContentLink || '',
+        }),
+      );
+    }
+
+    await this.evidenceRepo.save(uploaded);
     return this.findOne(activityId);
   }
 
