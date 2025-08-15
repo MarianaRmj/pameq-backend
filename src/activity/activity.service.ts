@@ -240,9 +240,9 @@ export class ActivitiesService {
     const a = await this.findOne(activityId);
 
     // 👉 Usuario que “poseerá” los archivos en su Drive
-    const ownerUserId = Number(
-      process.env.GOOGLE_OAUTH_OWNER_USER_ID ?? a.responsableId ?? 1,
-    );
+    // const ownerUserId = Number(
+    //   process.env.GOOGLE_OAUTH_OWNER_USER_ID ?? a.responsableId ?? 1,
+    // );
 
     // 1) Carpeta por actividad en el Drive del usuario
     const folderName =
@@ -252,7 +252,7 @@ export class ActivitiesService {
       );
 
     // 👇 Cambia: ahora pasamos ownerUserId
-    const folderId = await this.drive.ensureFolder(ownerUserId, folderName);
+    const folderId = await this.drive.ensureFolder(folderName);
 
     // 2) Subir cada archivo
     const uploaded: Evidence[] = [];
@@ -260,11 +260,12 @@ export class ActivitiesService {
       const remoteName = safeRemoteName(file.originalname);
 
       // 👇 Cambia: ahora pasamos ownerUserId
-      const up = await this.drive.uploadBuffer(ownerUserId, {
+      const up = await this.drive.uploadBuffer({
         buffer: file.buffer,
         filename: remoteName,
         mimeType: file.mimetype,
         parentId: folderId,
+        // If you need to specify ownerUserId, add it to the options object and update the service accordingly
       });
 
       uploaded.push(

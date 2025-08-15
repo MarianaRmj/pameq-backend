@@ -13,27 +13,25 @@ function bufferToStream(buffer: Buffer) {
 
 @Injectable()
 export class GoogleDriveService {
-  private defaultParent = process.env.DRIVE_PARENT_FOLDER_ID || undefined;
+  private readonly defaultParent =
+    process.env.DRIVE_PARENT_FOLDER_ID || undefined;
+  private readonly ownerUserId = Number(
+    process.env.GOOGLE_OAUTH_OWNER_USER_ID || 1,
+  );
 
   constructor(private readonly gauth: GoogleOAuthService) {}
 
-  private async getDrive(userId: number): Promise<drive_v3.Drive> {
-    const oauth2 = await this.gauth.getAuthorizedClient(userId);
+  private async getDrive(): Promise<drive_v3.Drive> {
+    const oauth2 = await this.gauth.getAuthorizedClient(this.ownerUserId);
     if (!oauth2) {
-      throw new UnauthorizedException(
-        'Conecta tu Google Drive primero en /google/auth',
-      );
+      throw new UnauthorizedException('🔒 No autorizado en Google Drive...');
     }
+
     return google.drive({ version: 'v3', auth: oauth2 });
   }
 
-  /** Busca o crea una carpeta en “Mi unidad” del usuario */
-  async ensureFolder(
-    userId: number,
-    name: string,
-    parentId = this.defaultParent,
-  ) {
-    const drive = await this.getDrive(userId);
+  async ensureFolder(name: string, parentId = this.defaultParent) {
+    const drive = await this.getDrive();
 
     const q = [
       `name='${name.replace(/'/g, "\\'")}'`,
@@ -63,17 +61,13 @@ export class GoogleDriveService {
     return res.data.id!;
   }
 
-  /** Sube un Buffer a “Mi unidad” del usuario */
-  async uploadBuffer(
-    userId: number,
-    opts: {
-      buffer: Buffer;
-      filename: string;
-      mimeType: string;
-      parentId?: string;
-      makeAnyoneReader?: boolean;
-    },
-  ) {
+  async uploadBuffer(opts: {
+    buffer: Buffer;
+    filename: string;
+    mimeType: string;
+    parentId?: string;
+    makeAnyoneReader?: boolean;
+  }) {
     const {
       buffer,
       filename,
@@ -81,7 +75,7 @@ export class GoogleDriveService {
       parentId,
       makeAnyoneReader = false,
     } = opts;
-    const drive = await this.getDrive(userId);
+    const drive = await this.getDrive();
 
     const res = await drive.files.create({
       requestBody: {

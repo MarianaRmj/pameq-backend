@@ -72,6 +72,8 @@ export class ActivitiesController {
     @Param('id', ParseIntPipe) id: number,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
+    console.log('✅ Recibiendo archivos:', files);
+
     return this.service.addEvidences(id, files); // ahora sí usamos los buffers
   }
 
