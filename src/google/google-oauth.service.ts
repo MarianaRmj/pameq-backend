@@ -64,4 +64,28 @@ export class GoogleOAuthService {
     });
     return oauth2;
   }
+
+  async updateTokens(
+    userId: number,
+    tokens: {
+      access_token?: string;
+      refresh_token?: string;
+      scope?: string;
+      token_type?: string;
+      expiry_date?: string | number;
+    },
+  ) {
+    const row = await this.repo.findOne({ where: { userId } });
+    if (!row) return;
+
+    row.access_token = tokens.access_token ?? row.access_token;
+    row.refresh_token = tokens.refresh_token ?? row.refresh_token;
+    row.scope = tokens.scope ?? row.scope;
+    row.token_type = tokens.token_type ?? row.token_type;
+    row.expiry_date = tokens.expiry_date
+      ? String(tokens.expiry_date)
+      : row.expiry_date;
+
+    await this.repo.save(row);
+  }
 }

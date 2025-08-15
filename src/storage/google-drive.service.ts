@@ -27,6 +27,19 @@ export class GoogleDriveService {
       throw new UnauthorizedException('🔒 No autorizado en Google Drive...');
     }
 
+    // ✅ Guarda los nuevos tokens si fueron refrescados
+    const tokens = oauth2.credentials;
+    if (tokens.access_token) {
+      const filteredTokens = {
+        access_token: tokens.access_token ?? undefined,
+        refresh_token: tokens.refresh_token ?? undefined,
+        scope: tokens.scope ?? undefined,
+        token_type: tokens.token_type ?? undefined,
+        expiry_date: tokens.expiry_date ?? undefined,
+      };
+      await this.gauth.updateTokens(this.ownerUserId, filteredTokens);
+    }
+
     return google.drive({ version: 'v3', auth: oauth2 });
   }
 
