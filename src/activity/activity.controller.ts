@@ -46,6 +46,11 @@ export class ActivitiesController {
     return this.service.findAll(q);
   }
 
+  @Get('form-options')
+  async getFormOptions(@Query('userId', ParseIntPipe) userId: number) {
+    return this.service.getFormOptions(userId);
+  }
+
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findOne(id);

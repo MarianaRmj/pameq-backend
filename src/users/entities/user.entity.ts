@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Sede } from 'src/sedes/entities/sede.entity';
 import { Event } from 'src/event/entities/event.entity';
+import { Institution } from 'src/institutions/entities/institution.entity';
 
 @Entity({ name: 'usuarios' })
 export class User {
@@ -46,4 +47,13 @@ export class User {
 
   @OneToMany(() => Event, (event) => event.user)
   events: Event[];
+
+  @ManyToOne(() => Institution, (institution) => institution, {
+    eager: false,
+  })
+  @JoinColumn({ name: 'institutionId' })
+  institution: Institution;
+
+  @Column()
+  institutionId: number;
 }

@@ -292,4 +292,50 @@ export class ActivitiesService {
     await this.evidenceRepo.remove(e);
     return { deleted: true };
   }
+
+  async getFormOptions(userId: number) {
+    const user = (await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['institution'],
+    })) as User & { institution?: Institution };
+
+    if (!user || !user.institution) {
+      throw new BadRequestException('Usuario o institución no válidos');
+    }
+
+    const institutionId = user.institution.id;
+
+    const ciclo = await this.cicloRepo.findOne({
+      where: { institution: { id: institutionId } },
+      order: { fecha_inicio: 'DESC' },
+    });
+
+    const sedes = await this.sedeRepo.find({
+      where: { institution: { id: institutionId } },
+      select: ['id', 'nombre_sede'] as (keyof Sede)[],
+      order: { nombre_sede: 'ASC' },
+    });
+
+    const responsables = await this.userRepo.find({
+      where: { institution: { id: institutionId } },
+      select: ['id', 'nombre', 'email'],
+      order: { nombre: 'ASC' },
+    });
+
+    const procesos = await this.processRepo.find({
+      select: ['id', 'nombre'],
+      order: { nombre: 'ASC' },
+    });
+
+    return {
+      institution: {
+        id: institutionId,
+        nombre: user.institution.nombre_ips,
+      },
+      ciclo,
+      sedes,
+      responsables,
+      procesos,
+    };
+  }
 }
