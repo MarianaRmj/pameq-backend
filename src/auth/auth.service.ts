@@ -1,17 +1,17 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
+import { User } from 'src/users/entities/user.entity';
 
 type UserSafe = {
   id: number;
   email: string;
   nombre: string;
   rol: string;
-  sede: number | null;
-  // Puedes agregar más campos si los tienes en la entidad y quieres exponerlos
+  sedeId: number | null;
+  institutionId: number | null;
 };
 
 @Injectable()
@@ -29,24 +29,26 @@ export class AuthService {
     const user = await this.userRepository.findOne({
       where: { email },
       relations: ['sede'],
-      select: ['id', 'email', 'nombre', 'password', 'rol'],
+      select: ['id', 'email', 'nombre', 'password', 'rol', 'institutionId'],
     });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      const { password, ...rest } = user;
+    if (!user || !user.password) return null;
 
-      const safeUser: UserSafe = {
-        id: rest.id,
-        email: rest.email,
-        nombre: rest.nombre,
-        rol: rest.rol,
-        sede: rest.sede?.id ?? null,
-      };
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return null;
 
-      return safeUser;
-    }
+    const { id, nombre, rol, sede, institutionId: instId } = user;
 
-    return null;
+    const safeUser: UserSafe = {
+      id,
+      email,
+      nombre,
+      rol,
+      sedeId: sede?.id ?? null,
+      institutionId: instId ?? null,
+    };
+
+    return safeUser;
   }
 
   async login(
@@ -54,8 +56,18 @@ export class AuthService {
     password: string,
   ): Promise<{ token: string; usuario: UserSafe }> {
     const user = await this.validateUser(email, password);
-    if (!user) throw new UnauthorizedException('Credenciales inválidas');
-    const payload = { sub: user.id, email: user.email, rol: user.rol };
+
+    if (!user) {
+      throw new UnauthorizedException('Credenciales inválidas');
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      institutionId: user.institutionId,
+      rol: user.rol,
+    };
+
     return {
       token: this.jwtService.sign(payload),
       usuario: user,

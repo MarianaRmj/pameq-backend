@@ -239,11 +239,6 @@ export class ActivitiesService {
 
     const a = await this.findOne(activityId);
 
-    // 👉 Usuario que “poseerá” los archivos en su Drive
-    // const ownerUserId = Number(
-    //   process.env.GOOGLE_OAUTH_OWNER_USER_ID ?? a.responsableId ?? 1,
-    // );
-
     // 1) Carpeta por actividad en el Drive del usuario
     const folderName =
       `ACT-${String(a.id).padStart(6, '0')} - ${a.nombre_actividad}`.slice(
@@ -265,7 +260,6 @@ export class ActivitiesService {
         filename: remoteName,
         mimeType: file.mimetype,
         parentId: folderId,
-        // If you need to specify ownerUserId, add it to the options object and update the service accordingly
       });
 
       uploaded.push(
@@ -317,9 +311,9 @@ export class ActivitiesService {
     });
 
     const responsables = await this.userRepo.find({
-      where: { institution: { id: institutionId } },
-      select: ['id', 'nombre', 'email'],
+      where: { activo: true },
       order: { nombre: 'ASC' },
+      select: ['id', 'nombre'],
     });
 
     const procesos = await this.processRepo.find({

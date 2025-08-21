@@ -20,7 +20,7 @@ export class User {
   @Column({ length: 100 })
   nombre: string;
 
-  @Column({ select: false, nullable: true })
+  @Column({ type: 'varchar', length: 100, select: false })
   password: string;
 
   @Column({ unique: true })
@@ -29,9 +29,13 @@ export class User {
   @Column({ length: 50 })
   rol: string;
 
-  @ManyToOne(() => Sede, { nullable: true })
-  @JoinColumn({ name: 'sede_id' })
-  sede?: Sede;
+  // === Sede obligatoria ===
+  @ManyToOne(() => Sede, { nullable: false })
+  @JoinColumn({ name: 'sedeId' })
+  sede: Sede;
+
+  @Column({ type: 'int' })
+  sedeId: number;
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
@@ -48,12 +52,14 @@ export class User {
   @OneToMany(() => Event, (event) => event.user)
   events: Event[];
 
-  @ManyToOne(() => Institution, (institution) => institution, {
-    eager: false,
-  })
+  // === Institution obligatoria (se obtiene del header x-institution-id) ===
+  @ManyToOne(() => Institution, (institution) => institution, { eager: false })
   @JoinColumn({ name: 'institutionId' })
   institution: Institution;
 
-  @Column()
+  @Column({ type: 'int' })
   institutionId: number;
+
+  @Column({ default: true })
+  activo: boolean;
 }
