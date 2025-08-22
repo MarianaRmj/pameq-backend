@@ -18,6 +18,7 @@ import { ScheduleModule } from './schedule/schedule.module';
 import { ActivitiesModule } from './activity/activity.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { GoogleModule } from './google/google.module';
+import { ProcessesModule } from './processes/processes.module';
 import * as path from 'path';
 
 @Module({
@@ -63,6 +64,7 @@ import * as path from 'path';
     ScheduleModule,
     ActivitiesModule,
     GoogleModule,
+    ProcessesModule,
   ],
 })
 export class AppModule {}
