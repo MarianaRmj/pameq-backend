@@ -20,6 +20,12 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { GoogleModule } from './google/google.module';
 import { ProcessesModule } from './processes/processes.module';
 import { PamecModule } from './pamec/pamec.module';
+import { EvaluacionModule } from './evaluacion/evaluacion.module';
+import { AutoevaluacionModule } from './autoevaluacion/autoevaluacion.module';
+import { HojaRadarModule } from './hoja-radar/hoja-radar.module';
+import { PriorizacionModule } from './priorizacion/priorizacion.module';
+import { PlanMejoramientoModule } from './plan-mejoramiento/plan-mejoramiento.module';
+import { DetallePriorizacionModule } from './detalle-priorizacion/detalle-priorizacion.module';
 import * as path from 'path';
 
 @Module({
@@ -67,6 +73,12 @@ import * as path from 'path';
     GoogleModule,
     ProcessesModule,
     PamecModule,
+    EvaluacionModule,
+    AutoevaluacionModule,
+    HojaRadarModule,
+    PriorizacionModule,
+    PlanMejoramientoModule,
+    DetallePriorizacionModule,
   ],
 })
 export class AppModule {}

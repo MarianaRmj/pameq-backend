@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
-@Entity('proceso')
+@Entity('procesos_invitados')
 export class Process {
   @PrimaryGeneratedColumn()
   id!: number;
