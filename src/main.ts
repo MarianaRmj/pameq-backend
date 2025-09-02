@@ -1,10 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { loggerGlobal } from './middleware/logger.middleware';
-import { SeedModule } from './seeders/seed.module';
-import { UserAdminSeeder } from './seeders/user-admin.seeder';
-import { InstitutionSedeSeeder } from './seeders/institution-sede.seeder';
-import { CycleSeeder } from './seeders/ciclo.seeder';
+import { SeedModule } from './seeds/seed.module';
+import { UserAdminSeeder } from './seeds/user-admin.seeder';
+import { InstitutionSedeSeeder } from './seeds/institution-sede.seeder';
+import { CycleSeeder } from './seeds/ciclo.seeder';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);

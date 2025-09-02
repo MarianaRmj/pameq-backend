@@ -4,7 +4,7 @@ import { CyclesController } from './cycles.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Ciclo } from './entities/cycle.entity';
 import { Sede } from 'src/sedes/entities/sede.entity';
-import { CycleSeeder } from 'src/seeders/ciclo.seeder';
+import { CycleSeeder } from 'src/seeds/ciclo.seeder';
 import { Institution } from 'src/institutions/entities/institution.entity';
 import { Event } from 'src/event/entities/event.entity';
 

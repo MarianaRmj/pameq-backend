@@ -11,7 +11,7 @@ import { RecoverModule } from './auth/recoverPassword/recover.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { InstitutionsModule } from './institutions/institutions.module';
 import { SedesModule } from './sedes/sedes.module';
-import { SeedModule } from './seeders/seed.module';
+import { SeedModule } from './seeds/seed.module';
 import { CyclesModule } from './cycles/cycles.module';
 import { EventsModule } from './event/event.module';
 import { ScheduleModule } from './schedule/schedule.module';
@@ -26,6 +26,7 @@ import { HojaRadarModule } from './hoja-radar/hoja-radar.module';
 import { PriorizacionModule } from './priorizacion/priorizacion.module';
 import { PlanMejoramientoModule } from './plan-mejoramiento/plan-mejoramiento.module';
 import { DetallePriorizacionModule } from './detalle-priorizacion/detalle-priorizacion.module';
+import { CalidadEsperadaModule } from './calidad-esperada/calidad-esperada.module';
 import * as path from 'path';
 
 @Module({
@@ -79,6 +80,7 @@ import * as path from 'path';
     PriorizacionModule,
     PlanMejoramientoModule,
     DetallePriorizacionModule,
+    CalidadEsperadaModule,
   ],
 })
 export class AppModule {}
