@@ -1,6 +1,7 @@
 import { config as dotenvconfig } from 'dotenv';
 import { registerAs } from '@nestjs/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { Estandar } from 'src/evaluacion/entities/estandar.entity';
 
 dotenvconfig({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 dotenvconfig(); // fallback para .env por si acaso
@@ -26,7 +27,11 @@ const config: DataSourceOptions = process.env.DATABASE_URL
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       synchronize: true,
-      entities: [isDev ? 'src/**/*.entity.ts' : 'dist/**/*.entity.js'],
+      entities: [
+        Estandar,
+        isDev ? 'src/**/entities/*.entity.ts' : 'dist/**/entities/*.entity.js',
+      ],
+
       migrations: [
         isDev ? 'src/migrations/*{.ts,.js}' : 'dist/migrations/*{.ts,.js}',
       ],

@@ -10,7 +10,7 @@ import { EvaluacionService } from './evaluacion.service';
 import { CreateCalificacionDto } from './dto/create-calificacion.dto';
 import { CreateEvaluacionCualitativaDto } from './dto/create-evaluacion-cualitativa.dto';
 
-@Controller()
+@Controller('evaluacion')
 export class EvaluacionController {
   constructor(private readonly service: EvaluacionService) {}
 
@@ -27,6 +27,7 @@ export class EvaluacionController {
     @Param('estandarId', ParseIntPipe) estandarId: number,
     @Body() dto: CreateEvaluacionCualitativaDto,
   ) {
+    console.log('📦 DTO recibido:', dto);
     return this.service.registrarEvaluacionCualitativa(estandarId, dto);
   }
 
