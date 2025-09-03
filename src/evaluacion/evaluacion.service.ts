@@ -6,6 +6,7 @@ import { Estandar } from './entities/estandar.entity';
 import { CalificacionEstandar } from './entities/calificacion.entity';
 import { CreateCalificacionDto } from './dto/create-calificacion.dto';
 import { CreateEvaluacionCualitativaDto } from './dto/create-evaluacion-cualitativa.dto';
+import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 
 @Injectable()
 export class EvaluacionService {
@@ -16,6 +17,8 @@ export class EvaluacionService {
     private cualitativaRepo: Repository<EvaluacionCualitativaEstandar>,
     @InjectRepository(Estandar)
     private estandarRepo: Repository<Estandar>,
+    @InjectRepository(Autoevaluacion)
+    private autoevaluacionRepo: Repository<Autoevaluacion>,
   ) {}
 
   async registrarCalificacion(estandarId: number, dto: CreateCalificacionDto) {
@@ -60,6 +63,13 @@ export class EvaluacionService {
   }
 
   async listarEvaluacionPorAutoevaluacion(autoevaluacionId: number) {
+    const autoevaluacion = await this.autoevaluacionRepo.findOne({
+      where: { id: autoevaluacionId },
+      relations: ['estandares'],
+    });
+
+    if (!autoevaluacion) return [];
+
     const calificaciones = await this.calificacionRepo.find({
       where: { autoevaluacion_id: autoevaluacionId },
     });
@@ -68,17 +78,7 @@ export class EvaluacionService {
       where: { autoevaluacion_id: autoevaluacionId },
     });
 
-    // Buscar IDs únicos de estándares usados en esta autoevaluación
-    const estandarIds = [
-      ...new Set([
-        ...calificaciones.map((c) => c.estandar_id),
-        ...cualitativas.map((q) => q.estandar_id),
-      ]),
-    ];
-
-    const estandares = await this.estandarRepo.findByIds(estandarIds);
-
-    return estandares.map((est) => {
+    return autoevaluacion.estandares.map((est) => {
       const cal = calificaciones.find((c) => c.estandar_id === est.id);
       const cual = cualitativas.find((q) => q.estandar_id === est.id);
       return {

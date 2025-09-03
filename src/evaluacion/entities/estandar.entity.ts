@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 
 @Entity('estandares_acreditacion')
 export class Estandar {
@@ -14,6 +15,9 @@ export class Estandar {
   @Column()
   descripcion: string;
 
-  @Column('simple-array')
+  @Column('text', { array: true })
   criterios: string[];
+
+  @ManyToMany(() => Autoevaluacion, (a) => a.estandares)
+  autoevaluaciones: Autoevaluacion[];
 }
