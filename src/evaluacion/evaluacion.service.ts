@@ -27,10 +27,33 @@ export class EvaluacionService {
     });
     if (!estandar) throw new NotFoundException('Estandar no encontrado');
 
-    const calificacion = this.calificacionRepo.create({
-      ...dto,
-      estandar_id: estandarId,
+    const autoevaluacion = await this.autoevaluacionRepo.findOne({
+      where: { id: dto.autoevaluacionId },
     });
+    if (!autoevaluacion)
+      throw new NotFoundException('Autoevaluación no encontrada');
+
+    const calificacion = this.calificacionRepo.create({
+      estandar,
+      autoevaluacion, // ✅ aquí es donde estaba fallando
+      sistematicidad: dto.sistematicidad,
+      proactividad: dto.proactividad,
+      ciclo_evaluacion: dto.ciclo_evaluacion,
+      total_enfoque: dto.total_enfoque,
+      despliegue_institucion: dto.despliegue_institucion,
+      despliegue_cliente: dto.despliegue_cliente,
+      total_implementacion: dto.total_implementacion,
+      pertinencia: dto.pertinencia,
+      consistencia: dto.consistencia,
+      avance_medicion: dto.avance_medicion,
+      tendencia: dto.tendencia,
+      comparacion: dto.comparacion,
+      total_resultados: dto.total_resultados,
+      total_estandar: dto.total_estandar,
+      calificacion: dto.calificacion,
+      observaciones: dto.observaciones,
+    });
+
     return this.calificacionRepo.save(calificacion);
   }
 

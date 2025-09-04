@@ -7,6 +7,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Estandar } from './estandar.entity';
+import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 
 @Entity('calificaciones_estandar')
 export class CalificacionEstandar {
@@ -27,10 +28,16 @@ export class CalificacionEstandar {
   @Column() comparacion: number;
   @Column() total_resultados: number;
   @Column() total_estandar: number;
+  @Column('float') // o int, dependiendo de tu lógica
+  calificacion: number;
   @Column('text', { nullable: true }) observaciones?: string;
   @CreateDateColumn() created_at: Date;
 
   @ManyToOne(() => Estandar, { eager: true })
   @JoinColumn({ name: 'estandar_id' })
   estandar: Estandar;
+
+  @ManyToOne(() => Autoevaluacion, { nullable: false })
+  @JoinColumn({ name: 'autoevaluacion_id' })
+  autoevaluacion: Autoevaluacion;
 }
