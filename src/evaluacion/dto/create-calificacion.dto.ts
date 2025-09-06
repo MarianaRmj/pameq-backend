@@ -17,4 +17,5 @@ export class CreateCalificacionDto {
   @IsInt() total_resultados: number;
   @IsInt() total_estandar: number;
   @IsOptional() @IsString() observaciones?: string;
+  @IsInt() calificacion: number;
 }

@@ -2,6 +2,7 @@ import { config as dotenvconfig } from 'dotenv';
 import { registerAs } from '@nestjs/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { Estandar } from 'src/evaluacion/entities/estandar.entity';
+import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 
 dotenvconfig({ path: `.env.${process.env.NODE_ENV || 'development'}` });
 dotenvconfig(); // fallback para .env por si acaso
@@ -29,13 +30,14 @@ const config: DataSourceOptions = process.env.DATABASE_URL
       synchronize: true,
       entities: [
         Estandar,
+        Autoevaluacion,
         isDev ? 'src/**/entities/*.entity.ts' : 'dist/**/entities/*.entity.js',
       ],
 
       migrations: [
         isDev ? 'src/migrations/*{.ts,.js}' : 'dist/migrations/*{.ts,.js}',
       ],
-      dropSchema: true,
+      dropSchema: false,
     };
 
 export default registerAs('typeorm', () => config);

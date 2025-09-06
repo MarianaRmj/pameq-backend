@@ -4,7 +4,10 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
+import { Estandar } from 'src/evaluacion/entities/estandar.entity';
 
 @Entity('autoevaluaciones')
 export class Autoevaluacion {
@@ -13,4 +16,7 @@ export class Autoevaluacion {
   @Column() usuario_id: number;
   @Column() ciclo: string;
   @CreateDateColumn({ name: 'fecha_evaluacion' }) fechaEvaluacion: Date;
+  @ManyToMany(() => Estandar, (e) => e.autoevaluaciones)
+  @JoinTable()
+  estandares: Estandar[];
 }
