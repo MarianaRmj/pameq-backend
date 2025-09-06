@@ -17,7 +17,7 @@ export class HojaRadarService {
 
   async generar(autoevaluacionId: number) {
     const calificaciones = await this.calificacionRepo.find({
-      where: { autoevaluacion_id: autoevaluacionId },
+      where: { autoevaluacionId },
     });
 
     const grupos = [1, 2, 3, 4, 5, 6];

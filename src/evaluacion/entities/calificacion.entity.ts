@@ -12,8 +12,13 @@ import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entit
 @Entity('calificaciones_estandar')
 export class CalificacionEstandar {
   @PrimaryGeneratedColumn() id: number;
-  @Column() estandar_id: number;
-  @Column() autoevaluacion_id: number;
+
+  @Column({ name: 'estandar_id' })
+  estandarId: number;
+
+  @Column({ name: 'autoevaluacion_id' })
+  autoevaluacionId: number;
+
   @Column() sistematicidad: number;
   @Column() proactividad: number;
   @Column() ciclo_evaluacion: number;
@@ -28,10 +33,15 @@ export class CalificacionEstandar {
   @Column() comparacion: number;
   @Column() total_resultados: number;
   @Column() total_estandar: number;
-  @Column('float') // o int, dependiendo de tu lógica
+
+  @Column('float')
   calificacion: number;
-  @Column('text', { nullable: true }) observaciones?: string;
-  @CreateDateColumn() created_at: Date;
+
+  @Column('text', { nullable: true })
+  observaciones?: string;
+
+  @CreateDateColumn()
+  created_at: Date;
 
   @ManyToOne(() => Estandar, { eager: true })
   @JoinColumn({ name: 'estandar_id' })
