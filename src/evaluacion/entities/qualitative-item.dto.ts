@@ -1,5 +1,5 @@
 // dto/qualitative-item.dto.ts
-import { IsInt, IsNotEmpty, IsString, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class BaseQualitativaDto {
   @IsInt()
@@ -24,7 +24,12 @@ export class UpdateItemDto extends BaseQualitativaDto {
 }
 
 export class RemoveItemDto extends BaseQualitativaDto {
+  @IsOptional()
   @IsInt()
   @Min(0)
-  index: number;
+  index?: number;
+
+  @IsOptional()
+  @IsString()
+  value?: string;
 }

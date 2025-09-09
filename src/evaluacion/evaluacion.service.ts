@@ -18,6 +18,10 @@ import {
   UpdateItemDto,
 } from './entities/qualitative-item.dto';
 
+function hasKey<T extends object>(obj: T, key: string | symbol): boolean {
+  return !!Object.prototype.hasOwnProperty.call(obj, key as PropertyKey);
+}
+
 @Injectable()
 export class EvaluacionService {
   constructor(
@@ -31,6 +35,32 @@ export class EvaluacionService {
     private autoevaluacionRepo: Repository<Autoevaluacion>,
   ) {}
 
+  private ensureArray<T>(arr?: T[]): T[] {
+    return Array.isArray(arr) ? arr : [];
+  }
+
+  private resolveIndex(
+    arr: string[],
+    dto: { index?: number; value?: string },
+  ): number {
+    const list = this.ensureArray(arr);
+
+    if (dto.value != null) {
+      const i = list.findIndex((v) => v === dto.value);
+      if (i === -1) throw new NotFoundException('Item no encontrado');
+      return i;
+    }
+
+    if (dto.index == null) {
+      throw new BadRequestException('Debe enviar index o value');
+    }
+
+    const i = dto.index;
+    if (i < 0 || i >= list.length) {
+      throw new BadRequestException('Índice fuera de rango');
+    }
+    return i;
+  }
   // ---------- EXISTENTES ----------
   async registrarCalificacion(estandarId: number, dto: CreateCalificacionDto) {
     const estandar = await this.estandarRepo.findOne({
@@ -72,16 +102,60 @@ export class EvaluacionService {
     estandarId: number,
     dto: CreateEvaluacionCualitativaDto,
   ) {
-    // create simple (dejas esta ruta para bulk create/replace si lo usas)
+    const autoevaluacionId = dto.autoevaluacionId;
+
+    const existing = await this.cualitativaRepo.findOne({
+      where: { estandarId, autoevaluacionId },
+    });
+
+    if (existing) {
+      // 🔐 Listas: no sobrescribir con [] accidentalmente
+      if (hasKey(dto, 'fortalezas')) {
+        if (dto.fortalezas === null) {
+          existing.fortalezas = []; // reset explícito
+        } else if (Array.isArray(dto.fortalezas) && dto.fortalezas.length > 0) {
+          existing.fortalezas = dto.fortalezas; // reemplazo intencional con contenido
+        } // si viene [] o undefined, NO tocar
+      }
+
+      if (hasKey(dto, 'oportunidades_mejora')) {
+        if (dto.oportunidades_mejora === null) {
+          existing.oportunidades_mejora = [];
+        } else if (
+          Array.isArray(dto.oportunidades_mejora) &&
+          dto.oportunidades_mejora.length > 0
+        ) {
+          existing.oportunidades_mejora = dto.oportunidades_mejora;
+        }
+      }
+
+      // 📝 Campos de texto: actualiza solo si vienen definidos; acepta null para limpiar
+      if (hasKey(dto, 'soportes_fortalezas')) {
+        existing.soportes_fortalezas = dto.soportes_fortalezas ?? null;
+      }
+      if (hasKey(dto, 'efecto_oportunidades')) {
+        existing.efecto_oportunidades = dto.efecto_oportunidades ?? null;
+      }
+      if (hasKey(dto, 'acciones_mejora')) {
+        existing.acciones_mejora = dto.acciones_mejora ?? null;
+      }
+      if (hasKey(dto, 'limitantes_acciones')) {
+        existing.limitantes_acciones = dto.limitantes_acciones ?? null;
+      }
+
+      return this.cualitativaRepo.save(existing);
+    }
+
+    // Si no existe, crea nueva (aquí sí aplica defaults)
     const nueva = this.cualitativaRepo.create({
       estandarId,
-      autoevaluacionId: dto.autoevaluacionId,
+      autoevaluacionId,
       fortalezas: dto.fortalezas ?? [],
       oportunidades_mejora: dto.oportunidades_mejora ?? [],
-      soportes_fortalezas: dto.soportes_fortalezas,
-      efecto_oportunidades: dto.efecto_oportunidades,
-      acciones_mejora: dto.acciones_mejora,
-      limitantes_acciones: dto.limitantes_acciones,
+      soportes_fortalezas: dto.soportes_fortalezas ?? null,
+      efecto_oportunidades: dto.efecto_oportunidades ?? null,
+      acciones_mejora: dto.acciones_mejora ?? null,
+      limitantes_acciones: dto.limitantes_acciones ?? null,
     });
     return this.cualitativaRepo.save(nueva);
   }
@@ -199,13 +273,17 @@ export class EvaluacionService {
       estandarId,
       dto.autoevaluacionId,
     );
-    this.ensureIndex(row.fortalezas, dto.index);
-    row.fortalezas.splice(dto.index, 1);
+
+    row.fortalezas = this.ensureArray(row.fortalezas);
+    const i = this.resolveIndex(row.fortalezas, dto);
+
+    row.fortalezas.splice(i, 1);
     const saved = await this.cualitativaRepo.save(row);
+
     return {
       estandarId,
       autoevaluacionId: dto.autoevaluacionId,
-      deletedIndex: dto.index,
+      deletedIndex: i,
       fortalezas: saved.fortalezas,
     };
   }
@@ -244,18 +322,50 @@ export class EvaluacionService {
     };
   }
 
+  private norm(s: unknown) {
+    return typeof s === 'string' ? s.trim().replace(/\s+/g, ' ') : '';
+  }
+
+  private resolveIndexByValueOrIndex(
+    arr: string[],
+    dto: { index?: number; value?: string },
+  ): number {
+    const list = this.ensureArray(arr);
+
+    if (dto.value != null) {
+      const target = this.norm(dto.value);
+      const found = list.findIndex((v) => this.norm(v) === target);
+      if (found !== -1) return found;
+      throw new NotFoundException('Item no encontrado');
+    }
+
+    if (dto.index == null) {
+      throw new BadRequestException('Debe enviar index o value');
+    }
+
+    const i = dto.index;
+    if (i < 0 || i >= list.length) {
+      throw new BadRequestException('Índice fuera de rango');
+    }
+    return i;
+  }
+
   async removeOportunidad(estandarId: number, dto: RemoveItemDto) {
     const row = await this.getOrCreateCualitativa(
       estandarId,
       dto.autoevaluacionId,
     );
-    this.ensureIndex(row.oportunidades_mejora, dto.index);
-    row.oportunidades_mejora.splice(dto.index, 1);
+    const arr = Array.isArray(row.oportunidades_mejora)
+      ? row.oportunidades_mejora
+      : [];
+    const i = this.resolveIndexByValueOrIndex(arr, dto);
+    arr.splice(i, 1);
+    row.oportunidades_mejora = arr;
     const saved = await this.cualitativaRepo.save(row);
     return {
       estandarId,
       autoevaluacionId: dto.autoevaluacionId,
-      deletedIndex: dto.index,
+      deletedIndex: i,
       oportunidades: saved.oportunidades_mejora,
     };
   }

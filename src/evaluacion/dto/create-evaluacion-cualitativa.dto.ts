@@ -1,35 +1,14 @@
-import { IsArray, IsInt, IsOptional, IsString } from 'class-validator';
-import { Type } from 'class-transformer';
+// dto/create-evaluacion-cualitativa.dto.ts
+import { IsOptional, IsArray, IsString } from 'class-validator';
 
 export class CreateEvaluacionCualitativaDto {
-  @IsInt()
   autoevaluacionId: number;
 
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @Type(() => String)
-  fortalezas?: string[];
+  @IsOptional() @IsArray() fortalezas?: string[];
+  @IsOptional() @IsArray() oportunidades_mejora?: string[];
 
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  @Type(() => String)
-  oportunidades_mejora?: string[];
-
-  @IsOptional()
-  @IsString()
-  soportes_fortalezas?: string;
-
-  @IsOptional()
-  @IsString()
-  efecto_oportunidades?: string;
-
-  @IsOptional()
-  @IsString()
-  acciones_mejora?: string;
-
-  @IsOptional()
-  @IsString()
-  limitantes_acciones?: string;
+  @IsOptional() @IsString() soportes_fortalezas?: string | null;
+  @IsOptional() @IsString() efecto_oportunidades?: string | null;
+  @IsOptional() @IsString() acciones_mejora?: string | null;
+  @IsOptional() @IsString() limitantes_acciones?: string | null;
 }

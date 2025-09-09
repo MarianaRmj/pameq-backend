@@ -97,24 +97,24 @@ export class EvaluacionController {
   }
 
   // --- Rutas nuevas: Oportunidades ---
-  @Post('estandares/:estandarId/evaluacion-cualitativa/oportunidades')
-  addOportunidad(
+  @Post('estandares/:estandarId/evaluacion-cualitativa/oportunidades_mejora')
+  addOportunidadAlias(
     @Param('estandarId', ParseIntPipe) estandarId: number,
     @Body() dto: AddItemDto,
   ) {
     return this.service.addOportunidad(estandarId, dto);
   }
 
-  @Patch('estandares/:estandarId/evaluacion-cualitativa/oportunidades')
-  updateOportunidad(
+  @Patch('estandares/:estandarId/evaluacion-cualitativa/oportunidades_mejora')
+  updateOportunidadAlias(
     @Param('estandarId', ParseIntPipe) estandarId: number,
     @Body() dto: UpdateItemDto,
   ) {
     return this.service.updateOportunidad(estandarId, dto);
   }
 
-  @Delete('estandares/:estandarId/evaluacion-cualitativa/oportunidades')
-  removeOportunidad(
+  @Delete('estandares/:estandarId/evaluacion-cualitativa/oportunidades_mejora')
+  removeOportunidadAliasDelete(
     @Param('estandarId', ParseIntPipe) estandarId: number,
     @Body() dto: RemoveItemDto,
   ) {
