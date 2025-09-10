@@ -24,17 +24,15 @@ export class EvaluacionCualitativaEstandar {
 
   @Column({ type: 'jsonb', nullable: false, default: () => "'[]'::jsonb" })
   oportunidades_mejora: string[];
-  @Column('text', { nullable: true })
-  soportes_fortalezas: string | null;
 
-  @Column('text', { nullable: true })
-  efecto_oportunidades: string | null;
+  @Column({ type: 'jsonb', nullable: false, default: () => "'[]'::jsonb" })
+  efecto_oportunidades: string[];
 
-  @Column('text', { nullable: true })
-  acciones_mejora: string | null;
+  @Column({ type: 'jsonb', nullable: false, default: () => "'[]'::jsonb" })
+  acciones_mejora: string[];
 
-  @Column('text', { nullable: true })
-  limitantes_acciones: string | null;
+  @Column({ type: 'jsonb', nullable: false, default: () => "'[]'::jsonb" })
+  limitantes_acciones: string[];
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;

@@ -1,4 +1,3 @@
-// evaluacion.controller.ts
 import {
   Controller,
   Get,
@@ -23,7 +22,7 @@ import {
 export class EvaluacionController {
   constructor(private readonly service: EvaluacionService) {}
 
-  // --- Tus rutas existentes ---
+  // --- Calificaciones ---
   @Post('estandares/:estandarId/calificaciones')
   registrarCalificacion(
     @Param('estandarId', ParseIntPipe) estandarId: number,
@@ -32,6 +31,7 @@ export class EvaluacionController {
     return this.service.registrarCalificacion(estandarId, dto);
   }
 
+  // --- Evaluación cualitativa completa (save) ---
   @Post('estandares/:estandarId/evaluacion-cualitativa')
   registrarEvaluacionCualitativa(
     @Param('estandarId', ParseIntPipe) estandarId: number,
@@ -40,6 +40,7 @@ export class EvaluacionController {
     return this.service.registrarEvaluacionCualitativa(estandarId, dto);
   }
 
+  // --- Listados ---
   @Get('autoevaluaciones/:autoevaluacionId/estandares')
   listarPorAutoevaluacion(
     @Param('autoevaluacionId', ParseIntPipe) autoevaluacionId: number,
@@ -59,7 +60,6 @@ export class EvaluacionController {
     return this.service.obtenerCalificacion(estandarId);
   }
 
-  // ⚠️ Mejora: esta versión recibe también autoevaluacionId (query) para traer la fila correcta
   @Get('estandares/:estandarId/evaluacion-cualitativa')
   obtenerEvaluacionCualitativa(
     @Param('estandarId', ParseIntPipe) estandarId: number,
@@ -71,7 +71,7 @@ export class EvaluacionController {
     );
   }
 
-  // --- Rutas nuevas: Fortalezas ---
+  // --- Fortalezas ---
   @Post('estandares/:estandarId/evaluacion-cualitativa/fortalezas')
   addFortaleza(
     @Param('estandarId', ParseIntPipe) estandarId: number,
@@ -96,9 +96,9 @@ export class EvaluacionController {
     return this.service.removeFortaleza(estandarId, dto);
   }
 
-  // --- Rutas nuevas: Oportunidades ---
+  // --- Oportunidades ---
   @Post('estandares/:estandarId/evaluacion-cualitativa/oportunidades_mejora')
-  addOportunidadAlias(
+  addOportunidad(
     @Param('estandarId', ParseIntPipe) estandarId: number,
     @Body() dto: AddItemDto,
   ) {
@@ -106,7 +106,7 @@ export class EvaluacionController {
   }
 
   @Patch('estandares/:estandarId/evaluacion-cualitativa/oportunidades_mejora')
-  updateOportunidadAlias(
+  updateOportunidad(
     @Param('estandarId', ParseIntPipe) estandarId: number,
     @Body() dto: UpdateItemDto,
   ) {
@@ -114,10 +114,85 @@ export class EvaluacionController {
   }
 
   @Delete('estandares/:estandarId/evaluacion-cualitativa/oportunidades_mejora')
-  removeOportunidadAliasDelete(
+  removeOportunidad(
     @Param('estandarId', ParseIntPipe) estandarId: number,
     @Body() dto: RemoveItemDto,
   ) {
     return this.service.removeOportunidad(estandarId, dto);
+  }
+
+  // --- Efecto de Oportunidades ---
+  @Post('estandares/:estandarId/evaluacion-cualitativa/efecto_oportunidades')
+  addEfecto(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Body() dto: AddItemDto,
+  ) {
+    return this.service.addEfecto(estandarId, dto);
+  }
+
+  @Patch('estandares/:estandarId/evaluacion-cualitativa/efecto_oportunidades')
+  updateEfecto(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Body() dto: UpdateItemDto,
+  ) {
+    return this.service.updateEfecto(estandarId, dto);
+  }
+
+  @Delete('estandares/:estandarId/evaluacion-cualitativa/efecto_oportunidades')
+  removeEfecto(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Body() dto: RemoveItemDto,
+  ) {
+    return this.service.removeEfecto(estandarId, dto);
+  }
+
+  // --- Acciones de Mejora ---
+  @Post('estandares/:estandarId/evaluacion-cualitativa/acciones_mejora')
+  addAccion(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Body() dto: AddItemDto,
+  ) {
+    return this.service.addAccion(estandarId, dto);
+  }
+
+  @Patch('estandares/:estandarId/evaluacion-cualitativa/acciones_mejora')
+  updateAccion(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Body() dto: UpdateItemDto,
+  ) {
+    return this.service.updateAccion(estandarId, dto);
+  }
+
+  @Delete('estandares/:estandarId/evaluacion-cualitativa/acciones_mejora')
+  removeAccion(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Body() dto: RemoveItemDto,
+  ) {
+    return this.service.removeAccion(estandarId, dto);
+  }
+
+  // --- Limitantes ---
+  @Post('estandares/:estandarId/evaluacion-cualitativa/limitantes_acciones')
+  addLimitante(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Body() dto: AddItemDto,
+  ) {
+    return this.service.addLimitante(estandarId, dto);
+  }
+
+  @Patch('estandares/:estandarId/evaluacion-cualitativa/limitantes_acciones')
+  updateLimitante(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Body() dto: UpdateItemDto,
+  ) {
+    return this.service.updateLimitante(estandarId, dto);
+  }
+
+  @Delete('estandares/:estandarId/evaluacion-cualitativa/limitantes_acciones')
+  removeLimitante(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Body() dto: RemoveItemDto,
+  ) {
+    return this.service.removeLimitante(estandarId, dto);
   }
 }

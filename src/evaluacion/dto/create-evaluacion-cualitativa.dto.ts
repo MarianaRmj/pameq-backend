@@ -7,8 +7,8 @@ export class CreateEvaluacionCualitativaDto {
   @IsOptional() @IsArray() fortalezas?: string[];
   @IsOptional() @IsArray() oportunidades_mejora?: string[];
 
-  @IsOptional() @IsString() soportes_fortalezas?: string | null;
-  @IsOptional() @IsString() efecto_oportunidades?: string | null;
-  @IsOptional() @IsString() acciones_mejora?: string | null;
-  @IsOptional() @IsString() limitantes_acciones?: string | null;
+  @IsOptional() @IsString() soportes_fortalezas?: string[];
+  @IsOptional() @IsString() efecto_oportunidades?: string[];
+  @IsOptional() @IsString() acciones_mejora?: string[];
+  @IsOptional() @IsString() limitantes_acciones?: string[];
 }
