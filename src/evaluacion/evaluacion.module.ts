@@ -7,6 +7,7 @@ import { CalificacionEstandar } from './entities/calificacion.entity';
 import { EvaluacionService } from './evaluacion.service';
 import { EvaluacionController } from './evaluacion.controller';
 import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
+import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
 
 @Module({
   imports: [
@@ -15,9 +16,11 @@ import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entit
       EvaluacionCualitativaEstandar,
       Estandar,
       Autoevaluacion,
+      OportunidadMejoraEstandar,
     ]),
   ],
   providers: [EvaluacionService],
   controllers: [EvaluacionController],
+  exports: [TypeOrmModule],
 })
 export class EvaluacionModule {}

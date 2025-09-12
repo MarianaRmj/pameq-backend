@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  ManyToOne,
+} from 'typeorm';
 import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
+import { Proceso } from 'src/processes/entities/process.entity';
 
 @Entity('estandares_acreditacion')
 export class Estandar {
@@ -20,4 +27,7 @@ export class Estandar {
 
   @ManyToMany(() => Autoevaluacion, (a) => a.estandares)
   autoevaluaciones: Autoevaluacion[];
+
+  @ManyToOne(() => Proceso, (proceso) => proceso.estandares, { nullable: true })
+  proceso: Proceso;
 }

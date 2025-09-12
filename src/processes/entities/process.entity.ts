@@ -8,6 +8,7 @@ import {
 import { IndicadorProceso } from './indicador-proceso.entity';
 import { Institution } from 'src/institutions/entities/institution.entity';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
+import { Estandar } from 'src/evaluacion/entities/estandar.entity';
 
 @Entity('Procesos')
 export class Proceso {
@@ -37,4 +38,7 @@ export class Proceso {
 
   @OneToMany(() => Ciclo, (ciclo) => ciclo.sede)
   ciclos: Ciclo[];
+
+  @OneToMany(() => Estandar, (estandar) => estandar.proceso)
+  estandares: Estandar[];
 }

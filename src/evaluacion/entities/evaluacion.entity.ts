@@ -5,7 +5,11 @@ import {
   Column,
   CreateDateColumn,
   Index,
+  OneToMany,
+  ManyToOne,
 } from 'typeorm';
+import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
+import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 
 @Index(['estandarId', 'autoevaluacionId'], { unique: true })
 @Entity('evaluacion_cualitativa')
@@ -36,4 +40,16 @@ export class EvaluacionCualitativaEstandar {
 
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
+
+  @OneToMany(
+    () => OportunidadMejoraEstandar,
+    (oportunidad) => oportunidad.evaluacion,
+    { cascade: true },
+  )
+  oportunidades: OportunidadMejoraEstandar[];
+
+  @ManyToOne(() => Autoevaluacion, (autoeval) => autoeval.evaluaciones, {
+    onDelete: 'CASCADE',
+  })
+  autoevaluacion: Autoevaluacion;
 }

@@ -6,8 +6,10 @@ import {
   CreateDateColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { Estandar } from 'src/evaluacion/entities/estandar.entity';
+import { EvaluacionCualitativaEstandar } from 'src/evaluacion/entities/evaluacion.entity';
 
 @Entity('autoevaluaciones')
 export class Autoevaluacion {
@@ -19,4 +21,10 @@ export class Autoevaluacion {
   @ManyToMany(() => Estandar, (e) => e.autoevaluaciones)
   @JoinTable()
   estandares: Estandar[];
+
+  @OneToMany(
+    () => EvaluacionCualitativaEstandar,
+    (evaluacion) => evaluacion.autoevaluacion,
+  )
+  evaluaciones: EvaluacionCualitativaEstandar[];
 }
