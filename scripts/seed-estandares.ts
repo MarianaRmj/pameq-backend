@@ -1,15 +1,64 @@
-import { connectionSource } from 'src/config/typeorm';
+import { config as dotenvconfig } from 'dotenv';
+dotenvconfig({ path: `.env.${process.env.NODE_ENV || 'development'}` });
+dotenvconfig(); // fallback por si no encuentra .env específico
+
+import { DataSource } from 'typeorm';
 import { Estandar } from 'src/evaluacion/entities/estandar.entity';
 import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
+import { EvaluacionCualitativaEstandar } from 'src/evaluacion/entities/evaluacion.entity';
+import { Ciclo } from 'src/cycles/entities/cycle.entity';
+import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
+import { Sede } from 'src/sedes/entities/sede.entity';
+import { Institution } from 'src/institutions/entities/institution.entity';
+import { User } from 'src/users/entities/user.entity';
+import { Event } from 'src/event/entities/event.entity';
+import { Proceso } from 'src/processes/entities/process.entity';
+
 import * as XLSX from 'xlsx';
 import * as path from 'path';
+import { IndicadorProceso } from 'src/processes/entities/indicador-proceso.entity';
+
+// 📌 Debug de variables de entorno
+console.log('🔑 DB Config:');
+console.log('  Host:', process.env.DB_HOST);
+console.log('  Port:', process.env.DB_PORT);
+console.log('  User:', process.env.DB_USER);
+console.log(
+  '  Password:',
+  process.env.DB_PASSWORD ? '(cargada)' : '(vacía o undefined)',
+);
+console.log('  Database:', process.env.DB_NAME);
+
+// ⚡️ DataSource exclusivo para seeds
+const seedDataSource = new DataSource({
+  type: 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  port: +process.env.DB_PORT! || 5432,
+  username: process.env.DB_USER || 'postgres',
+  password: process.env.DB_PASSWORD || '', // 👈 siempre string
+  database: process.env.DB_NAME,
+  synchronize: true,
+  entities: [
+    Estandar,
+    Autoevaluacion,
+    EvaluacionCualitativaEstandar,
+    Ciclo,
+    OportunidadMejoraEstandar,
+    Sede,
+    Institution,
+    User,
+    Event,
+    Proceso,
+    IndicadorProceso,
+  ],
+});
 
 type Row = Record<string, string>;
 
 const normKey = (s: string) =>
   String(s || '')
     .toLowerCase()
-    .normalize('NFD') // quita acentos
+    .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/\s+/g, '')
     .replace(/\./g, '');
@@ -21,18 +70,11 @@ const pick = (row: Row, ...keys: string[]) => {
   return '';
 };
 
-// Extrae items numerados "1. ... 2. ... 3. ..." a un array
 const splitByNumbering = (raw: string) => {
   const text = String(raw || '').trim();
   if (!text) return [];
-
-  // Busca grupos tipo: "1. <texto del criterio>" hasta el próximo número o fin
   const matches = [...text.matchAll(/\b(\d+)\.\s([^]+?)(?=(?:\s\d+\.\s)|$)/g)];
-  if (matches.length > 0) {
-    return matches.map((m) => m[2].trim()); // devolvemos solo el contenido, sin “N. ”
-  }
-
-  // Fallback: por saltos de línea
+  if (matches.length > 0) return matches.map((m) => m[2].trim());
   return text
     .split(/\r?\n|\u2028|\u2029/)
     .map((s) => s.trim())
@@ -40,16 +82,15 @@ const splitByNumbering = (raw: string) => {
 };
 
 const run = async () => {
-  await connectionSource.initialize();
-  const estandarRepo = connectionSource.getRepository(Estandar);
-  const autoevalRepo = connectionSource.getRepository(Autoevaluacion);
+  await seedDataSource.initialize();
+  const estandarRepo = seedDataSource.getRepository(Estandar);
+  const autoevalRepo = seedDataSource.getRepository(Autoevaluacion);
 
   console.log('📄 Leyendo archivo Excel...');
   const filePath = path.resolve(__dirname, '../Estandares.xlsx');
   const workbook = XLSX.readFile(filePath);
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-  // Leemos como objetos y normalizamos claves
   const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
     defval: '',
   });
@@ -57,25 +98,20 @@ const run = async () => {
     const mapped: Row = {};
     Object.entries(r).forEach(([k, v]) => {
       mapped[normKey(k)] =
-        v === null || v === undefined
+        v == null
           ? ''
           : typeof v === 'object' && !Array.isArray(v)
             ? JSON.stringify(v)
-            : typeof v === 'object'
-              ? JSON.stringify(v)
-              : typeof v === 'object'
-                ? JSON.stringify(v)
-                : // eslint-disable-next-line @typescript-eslint/no-base-to-string
-                  String(v);
+            : // eslint-disable-next-line @typescript-eslint/no-base-to-string
+              String(v);
     });
     return mapped;
   });
 
   console.log(`📊 Total filas leídas: ${rows.length}`);
 
-  // ⚠️ Limpieza opcional
   try {
-    await connectionSource.query(
+    await seedDataSource.query(
       'TRUNCATE TABLE "estandares_acreditacion" CASCADE',
     );
     console.log('🧹 Tabla estandares_acreditacion truncada.');
@@ -86,11 +122,10 @@ const run = async () => {
     );
   }
 
-  // 🎯 Preparar los estándares
   const estandares: Partial<Estandar>[] = rows
     .filter(
       (row) => pick(row, 'grupo') && pick(row, 'codigo', 'código', 'codigo'),
-    ) // acepta "Código"
+    )
     .map((row) => {
       const grupo = pick(row, 'grupo');
       const codigo = pick(row, 'codigo', 'código');
@@ -99,7 +134,6 @@ const run = async () => {
 
       let criterios = splitByNumbering(criteriosRaw);
 
-      // Si los items no tenían numeración en el texto, numeramos ahora.
       const teniaNumeracion = /\b\d+\.\s/.test(criteriosRaw);
       if (!teniaNumeracion) {
         criterios = criterios.map((c, i) => `${i + 1}. ${c}`);
@@ -112,7 +146,6 @@ const run = async () => {
   const estandaresGuardados = await estandarRepo.save(estandares);
   console.log('✅ Estándares insertados correctamente.');
 
-  // 🧠 Upsert de autoevaluación 1
   let autoeval = await autoevalRepo.findOne({
     where: { id: 1 },
     relations: ['estandares'],
@@ -121,8 +154,8 @@ const run = async () => {
   if (!autoeval) {
     autoeval = autoevalRepo.create({
       id: 1,
-      sede_id: 1, // ajusta a tus IDs reales
-      usuario_id: 1, // ajusta a tus IDs reales
+      sede_id: 1,
+      usuario_id: 1,
       ciclo: '2025',
       estandares: [],
     });
@@ -134,7 +167,7 @@ const run = async () => {
     `✅ Asociados ${estandaresGuardados.length} estándares a autoevaluación ID 1.`,
   );
 
-  await connectionSource.destroy();
+  await seedDataSource.destroy();
   console.log('🏁 Proceso de seed finalizado.');
 };
 

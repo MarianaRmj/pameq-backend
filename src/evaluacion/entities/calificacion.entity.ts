@@ -9,7 +9,7 @@ import {
 import { Estandar } from './estandar.entity';
 import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 
-@Entity('calificaciones_estandar')
+@Entity('evaluacion_cuantitativa')
 export class CalificacionEstandar {
   @PrimaryGeneratedColumn() id: number;
 

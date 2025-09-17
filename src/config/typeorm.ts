@@ -13,12 +13,12 @@ const config: DataSourceOptions = process.env.DATABASE_URL
   ? {
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      synchronize: isDev, // Solo true en dev
+      synchronize: true, // Solo true en dev
       entities: [isDev ? 'src/**/*.entity.ts' : 'dist/**/*.entity.js'],
       migrations: [
         isDev ? 'src/migrations/*{.ts,.js}' : 'dist/migrations/*{.ts,.js}',
       ],
-      dropSchema: isDev, // Solo true en dev
+      dropSchema: false, // Solo true en dev
     }
   : {
       type: 'postgres',
@@ -33,11 +33,10 @@ const config: DataSourceOptions = process.env.DATABASE_URL
         Autoevaluacion,
         isDev ? 'src/**/entities/*.entity.ts' : 'dist/**/entities/*.entity.js',
       ],
-
+      dropSchema: false, // Solo true en dev
       migrations: [
         isDev ? 'src/migrations/*{.ts,.js}' : 'dist/migrations/*{.ts,.js}',
       ],
-      dropSchema: false,
     };
 
 export default registerAs('typeorm', () => config);

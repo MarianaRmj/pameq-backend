@@ -16,6 +16,7 @@ import {
   RemoveItemDto,
   UpdateItemDto,
 } from './entities/qualitative-item.dto';
+import { UpdateCalificacionDto } from './dto/UpdateCalificacionDto';
 
 function hasKey<T extends object>(obj: T, key: string | symbol): boolean {
   return !!Object.prototype.hasOwnProperty.call(obj, key as PropertyKey);
@@ -424,5 +425,46 @@ export class EvaluacionService {
       'delete',
       { value: dto.value, index: dto.index },
     );
+  }
+
+  // ==============================================================
+  // Evaluacion cualitativa
+  // ==============================================================
+
+  async updateCuantitativa(dto: UpdateCalificacionDto) {
+    const { autoevaluacionId, nombre, valor } = dto;
+
+    const calificacion = await this.calificacionRepo.findOne({
+      where: { autoevaluacionId },
+    });
+    if (!calificacion) {
+      throw new NotFoundException(
+        `No existe registro cuantitativo para la autoevaluación ${autoevaluacionId}`,
+      );
+    }
+
+    // Mapeo nombre → columna
+    const mapNombreToColumn: Record<string, keyof CalificacionEstandar> = {
+      'SISTEMATICIDAD Y AMPLITUD': 'sistematicidad',
+      PROACTIVIDAD: 'proactividad',
+      'CICLOS DE EVALUACIÓN Y MEJORAMIENTO': 'ciclo_evaluacion',
+      'DESPLIEGUE A LA INSTITUCIÓN': 'despliegue_institucion',
+      'DESPLIEGUE AL CLIENTE INTERNO Y/O EXTERNO': 'despliegue_cliente',
+      PERTINENCIA: 'pertinencia',
+      CONSISTENCIA: 'consistencia',
+      'AVANCE A LA MEDICIÓN': 'avance_medicion',
+      TENDENCIA: 'tendencia',
+      COMPARACIÓN: 'comparacion',
+    };
+
+    const columna = mapNombreToColumn[nombre];
+
+    if (!columna) {
+      throw new Error(`No se reconoce el aspecto "${nombre}"`);
+    }
+
+    (calificacion as unknown as Record<string, unknown>)[columna] = valor;
+
+    return this.calificacionRepo.save(calificacion);
   }
 }

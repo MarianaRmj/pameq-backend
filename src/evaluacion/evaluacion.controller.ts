@@ -17,6 +17,7 @@ import {
   RemoveItemDto,
   UpdateItemDto,
 } from './entities/qualitative-item.dto';
+import { UpdateCalificacionDto } from './dto/UpdateCalificacionDto';
 
 @Controller('evaluacion')
 export class EvaluacionController {
@@ -194,5 +195,12 @@ export class EvaluacionController {
     @Body() dto: RemoveItemDto,
   ) {
     return this.service.removeLimitante(estandarId, dto);
+  }
+
+  // --- Evaluacion cualitativa ---
+
+  @Patch('cuantitativa')
+  async updateCuantitativa(@Body() dto: UpdateCalificacionDto) {
+    return this.service.updateCuantitativa(dto);
   }
 }
