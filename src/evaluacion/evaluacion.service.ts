@@ -108,7 +108,7 @@ export class EvaluacionService {
     field: keyof EvaluacionCualitativaEstandar,
     action: 'add' | 'edit' | 'delete',
     payload: { text?: string; index?: number; value?: string },
-  ): Promise<{ success: boolean }> {
+  ): Promise<EvaluacionCualitativaEstandar> {
     const row = await this.getOrCreateCualitativa(estandarId, autoevaluacionId);
     const arr = Array.isArray(row[field]) ? [...(row[field] as string[])] : [];
 
@@ -137,10 +137,10 @@ export class EvaluacionService {
     }
 
     (row[field] as string[]) = arr;
-    await this.cualitativaRepo.save(row);
+    const saved = await this.cualitativaRepo.save(row);
 
-    // ✅ ya no devuelves el array completo
-    return { success: true };
+    // ✅ Ahora devuelves la entidad completa (incluyendo el array actualizado)
+    return saved;
   }
 
   // ============================================================== Calificaciones

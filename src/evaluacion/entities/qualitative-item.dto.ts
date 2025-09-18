@@ -1,4 +1,3 @@
-// dto/qualitative-item.dto.ts
 import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class BaseQualitativaDto {
@@ -14,9 +13,14 @@ export class AddItemDto extends BaseQualitativaDto {
 }
 
 export class UpdateItemDto extends BaseQualitativaDto {
+  @IsOptional()
   @IsInt()
   @Min(0)
-  index: number;
+  index?: number;
+
+  @IsOptional()
+  @IsString()
+  oldValue?: string;
 
   @IsString()
   @IsNotEmpty()
