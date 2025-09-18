@@ -5,10 +5,12 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Estandar } from './estandar.entity';
 import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 
+@Index(['estandarId', 'autoevaluacionId'], { unique: true })
 @Entity('evaluacion_cuantitativa')
 export class CalificacionEstandar {
   @PrimaryGeneratedColumn()

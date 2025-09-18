@@ -1,10 +1,14 @@
-import { IsNumber, IsString, IsArray } from 'class-validator';
+// src/oportunidades/dto/create-oportunidad-mejora.dto.ts
+import { IsInt, IsNotEmpty, IsArray } from 'class-validator';
 
 export class CreateOportunidadDto {
-  @IsNumber()
+  @IsInt()
   evaluacionId: number;
 
-  @IsString()
+  @IsInt()
+  estandarId: number;
+
+  @IsNotEmpty()
   descripcion: string;
 
   @IsArray()

@@ -33,6 +33,7 @@ export class OportunidadesService {
 
     const oportunidad = this.repo.create({
       evaluacion,
+      estandar: { id: dto.estandarId } as { id: number }, // <- relación directa
       descripcion: dto.descripcion,
       procesos,
     });
@@ -50,7 +51,8 @@ export class OportunidadesService {
   async findAllByEvaluacionYEst(autoevaluacionId: number, estandarId: number) {
     return this.repo.find({
       where: {
-        evaluacion: { autoevaluacionId, estandarId },
+        evaluacion: { autoevaluacionId },
+        estandar: { id: estandarId },
       },
       relations: ['procesos'],
     });

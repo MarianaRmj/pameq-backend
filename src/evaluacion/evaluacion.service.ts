@@ -86,6 +86,7 @@ export class EvaluacionService {
         estandarId,
         autoevaluacionId,
         fortalezas: [],
+        oportunidades_mejora: [], // ✅
         efecto_oportunidades: [],
         acciones_mejora: [],
         limitantes_acciones: [],
@@ -93,6 +94,7 @@ export class EvaluacionService {
       row = await this.cualitativaRepo.save(row);
     } else {
       row.fortalezas ??= [];
+      row.oportunidades_mejora ??= []; // ✅
       row.efecto_oportunidades ??= [];
       row.acciones_mejora ??= [];
       row.limitantes_acciones ??= [];
@@ -106,7 +108,7 @@ export class EvaluacionService {
     field: keyof EvaluacionCualitativaEstandar,
     action: 'add' | 'edit' | 'delete',
     payload: { text?: string; index?: number; value?: string },
-  ): Promise<{ [key: string]: string[] }> {
+  ): Promise<{ success: boolean }> {
     const row = await this.getOrCreateCualitativa(estandarId, autoevaluacionId);
     const arr = Array.isArray(row[field]) ? [...(row[field] as string[])] : [];
 
@@ -114,12 +116,19 @@ export class EvaluacionService {
       case 'add':
         if (payload.text) arr.push(payload.text.trim());
         break;
-      case 'edit':
+      case 'edit': {
         if (payload.index == null)
           throw new BadRequestException('Debe enviar index');
-        this.ensureIndex(arr, payload.index);
-        arr[payload.index] = payload.text?.trim() ?? arr[payload.index];
+        const idx = Number(payload.index);
+        if (idx < 0) throw new BadRequestException('Índice fuera de rango');
+        if (idx === arr.length) {
+          arr.push(payload.text?.trim() ?? '');
+        } else {
+          this.ensureIndex(arr, idx);
+          arr[idx] = payload.text?.trim() ?? arr[idx];
+        }
         break;
+      }
       case 'delete': {
         const i = this.resolveIndexByValueOrIndex(arr, payload);
         arr.splice(i, 1);
@@ -128,9 +137,10 @@ export class EvaluacionService {
     }
 
     (row[field] as string[]) = arr;
-    const saved = await this.cualitativaRepo.save(row);
+    await this.cualitativaRepo.save(row);
 
-    return { [field]: saved[field] as string[] };
+    // ✅ ya no devuelves el array completo
+    return { success: true };
   }
 
   // ============================================================== Calificaciones
@@ -146,13 +156,22 @@ export class EvaluacionService {
     if (!autoevaluacion)
       throw new NotFoundException('Autoevaluación no encontrada');
 
-    const calificacion = this.calificacionRepo.create({
-      estandar,
-      autoevaluacion,
-      ...dto,
+    let existing = await this.calificacionRepo.findOne({
+      where: { estandarId, autoevaluacionId: dto.autoevaluacionId },
     });
 
-    return this.calificacionRepo.save(calificacion);
+    if (existing) {
+      // Update
+      existing = this.calificacionRepo.merge(existing, dto);
+    } else {
+      // Insert
+      existing = this.calificacionRepo.create({
+        estandarId,
+        ...dto,
+      });
+    }
+
+    return this.calificacionRepo.save(existing);
   }
 
   async obtenerCalificacion(estandarId: number, autoevaluacionId: number) {
@@ -439,13 +458,53 @@ export class EvaluacionService {
       TENDENCIA: 'tendencia',
       COMPARACIÓN: 'comparacion',
     };
-    const columna = mapNombreToColumn[nombre];
 
+    const columna = mapNombreToColumn[nombre];
     if (!columna) {
       throw new Error(`No se reconoce el aspecto "${nombre}"`);
     }
-
     (calificacion as unknown as Record<string, unknown>)[columna] = valor;
+
+    // ✅ Recalcular totales
+    calificacion.total_enfoque =
+      (calificacion.sistematicidad ?? 0) +
+      (calificacion.proactividad ?? 0) +
+      (calificacion.ciclo_evaluacion ?? 0);
+
+    calificacion.total_implementacion =
+      (calificacion.despliegue_institucion ?? 0) +
+      (calificacion.despliegue_cliente ?? 0);
+
+    calificacion.total_resultados =
+      (calificacion.pertinencia ?? 0) +
+      (calificacion.consistencia ?? 0) +
+      (calificacion.avance_medicion ?? 0) +
+      (calificacion.tendencia ?? 0) +
+      (calificacion.comparacion ?? 0);
+
+    calificacion.total_estandar =
+      calificacion.total_enfoque +
+      calificacion.total_implementacion +
+      calificacion.total_resultados;
+
+    // ✅ Calcular promedio general (calificación)
+    const valores = [
+      calificacion.sistematicidad,
+      calificacion.proactividad,
+      calificacion.ciclo_evaluacion,
+      calificacion.despliegue_institucion,
+      calificacion.despliegue_cliente,
+      calificacion.pertinencia,
+      calificacion.consistencia,
+      calificacion.avance_medicion,
+      calificacion.tendencia,
+      calificacion.comparacion,
+    ].filter((n) => n && n > 0);
+
+    calificacion.calificacion =
+      valores.length > 0
+        ? Number((calificacion.total_estandar / valores.length).toFixed(2))
+        : 0;
 
     return this.calificacionRepo.save(calificacion);
   }
