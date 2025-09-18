@@ -11,7 +11,8 @@ import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entit
 
 @Entity('evaluacion_cuantitativa')
 export class CalificacionEstandar {
-  @PrimaryGeneratedColumn() id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ name: 'estandar_id' })
   estandarId: number;
@@ -19,26 +20,56 @@ export class CalificacionEstandar {
   @Column({ name: 'autoevaluacion_id' })
   autoevaluacionId: number;
 
-  @Column() sistematicidad: number;
-  @Column() proactividad: number;
-  @Column() ciclo_evaluacion: number;
-  @Column() total_enfoque: number;
-  @Column() despliegue_institucion: number;
-  @Column() despliegue_cliente: number;
-  @Column() total_implementacion: number;
-  @Column() pertinencia: number;
-  @Column() consistencia: number;
-  @Column() avance_medicion: number;
-  @Column() tendencia: number;
-  @Column() comparacion: number;
-  @Column() total_resultados: number;
-  @Column() total_estandar: number;
+  @Column({ type: 'int', default: 0 })
+  sistematicidad: number;
 
-  @Column('float')
+  @Column({ type: 'int', default: 0 })
+  proactividad: number;
+
+  @Column({ type: 'int', default: 0 })
+  ciclo_evaluacion: number;
+
+  @Column({ type: 'int', default: 0 })
+  total_enfoque: number;
+
+  @Column({ type: 'int', default: 0 })
+  despliegue_institucion: number;
+
+  @Column({ type: 'int', default: 0 })
+  despliegue_cliente: number;
+
+  @Column({ type: 'int', default: 0 })
+  total_implementacion: number;
+
+  @Column({ type: 'int', default: 0 })
+  pertinencia: number;
+
+  @Column({ type: 'int', default: 0 })
+  consistencia: number;
+
+  @Column({ type: 'int', default: 0 })
+  avance_medicion: number;
+
+  @Column({ type: 'int', default: 0 })
+  tendencia: number;
+
+  @Column({ type: 'int', default: 0 })
+  comparacion: number;
+
+  @Column({ type: 'int', default: 0 })
+  total_resultados: number;
+
+  @Column({ type: 'int', default: 0 })
+  total_estandar: number;
+
+  @Column('float', { default: 0 })
   calificacion: number;
 
+  @Column({ default: false })
+  confirmado: boolean;
+
   @Column('text', { nullable: true })
-  observaciones?: string;
+  observaciones: string | null;
 
   @CreateDateColumn()
   created_at: Date;

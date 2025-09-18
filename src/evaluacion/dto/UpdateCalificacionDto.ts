@@ -4,6 +4,9 @@ export class UpdateCalificacionDto {
   @IsNumber()
   autoevaluacionId: number;
 
+  @IsNumber()
+  estandarId: number;
+
   @IsString()
   nombre: string; // Ej: "SISTEMATICIDAD Y AMPLITUD"
 

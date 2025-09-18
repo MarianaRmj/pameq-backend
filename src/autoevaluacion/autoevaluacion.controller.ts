@@ -1,5 +1,13 @@
 // src/autoevaluacion/autoevaluacion.controller.ts
-import { Controller, Post, Get, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Body,
+  Param,
+  ParseIntPipe,
+  Patch,
+} from '@nestjs/common';
 import { AutoevaluacionService } from './autoevaluacion.service';
 import { CreateAutoevaluacionDto } from './dto/create-autoevaluacion.dto';
 
@@ -15,5 +23,21 @@ export class AutoevaluacionController {
   @Get(':ciclo')
   listar(@Param('ciclo') ciclo: string) {
     return this.service.listarPorCiclo(ciclo);
+  }
+
+  @Patch(':autoevaluacionId/estandares/:estandarId/confirmar')
+  confirmarEstandar(
+    @Param('autoevaluacionId', ParseIntPipe) autoevaluacionId: number,
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+  ) {
+    return this.service.confirmarEstandar(autoevaluacionId, estandarId);
+  }
+
+  @Get(':autoevaluacionId/estandares/:estandarId/estado')
+  estadoEstandar(
+    @Param('autoevaluacionId', ParseIntPipe) autoevaluacionId: number,
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+  ) {
+    return this.service.estadoEstandar(autoevaluacionId, estandarId);
   }
 }

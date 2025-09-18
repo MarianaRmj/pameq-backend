@@ -1,6 +1,14 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateOportunidadDto } from './create-oportunidad-mejora.dto';
+import { IsNumber, IsOptional, IsString, IsArray } from 'class-validator';
 
-export class UpdateOportunidadMejoraDto extends PartialType(
-  CreateOportunidadDto,
-) {}
+export class UpdateOportunidadDto {
+  @IsNumber()
+  id: number;
+
+  @IsOptional()
+  @IsString()
+  descripcion?: string;
+
+  @IsOptional()
+  @IsArray()
+  procesosIds?: number[];
+}

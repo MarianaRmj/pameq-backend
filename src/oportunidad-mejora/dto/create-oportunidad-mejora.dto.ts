@@ -1,4 +1,4 @@
-import { IsNumber, IsString, IsOptional } from 'class-validator';
+import { IsNumber, IsString, IsArray } from 'class-validator';
 
 export class CreateOportunidadDto {
   @IsNumber()
@@ -7,7 +7,6 @@ export class CreateOportunidadDto {
   @IsString()
   descripcion: string;
 
-  @IsOptional()
-  @IsNumber()
-  procesoId?: number;
+  @IsArray()
+  procesosIds: number[];
 }

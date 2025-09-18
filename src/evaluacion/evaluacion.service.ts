@@ -35,10 +35,7 @@ export class EvaluacionService {
     private autoevaluacionRepo: Repository<Autoevaluacion>,
   ) {}
 
-  // ==============================================================
-  // Helpers
-  // ==============================================================
-
+  // ============================================================== Helpers
   private ensureArray<T>(arr?: T[]): T[] {
     return Array.isArray(arr) ? arr : [];
   }
@@ -89,7 +86,6 @@ export class EvaluacionService {
         estandarId,
         autoevaluacionId,
         fortalezas: [],
-        oportunidades_mejora: [],
         efecto_oportunidades: [],
         acciones_mejora: [],
         limitantes_acciones: [],
@@ -97,7 +93,6 @@ export class EvaluacionService {
       row = await this.cualitativaRepo.save(row);
     } else {
       row.fortalezas ??= [];
-      row.oportunidades_mejora ??= [];
       row.efecto_oportunidades ??= [];
       row.acciones_mejora ??= [];
       row.limitantes_acciones ??= [];
@@ -105,7 +100,6 @@ export class EvaluacionService {
     return row;
   }
 
-  // 🔧 Genérico: manejar arrays (fortalezas, oportunidades, etc.)
   private async updateArrayField(
     estandarId: number,
     autoevaluacionId: number,
@@ -114,7 +108,6 @@ export class EvaluacionService {
     payload: { text?: string; index?: number; value?: string },
   ): Promise<{ [key: string]: string[] }> {
     const row = await this.getOrCreateCualitativa(estandarId, autoevaluacionId);
-
     const arr = Array.isArray(row[field]) ? [...(row[field] as string[])] : [];
 
     switch (action) {
@@ -140,10 +133,7 @@ export class EvaluacionService {
     return { [field]: saved[field] as string[] };
   }
 
-  // ==============================================================
-  // Calificaciones
-  // ==============================================================
-
+  // ============================================================== Calificaciones
   async registrarCalificacion(estandarId: number, dto: CreateCalificacionDto) {
     const estandar = await this.estandarRepo.findOne({
       where: { id: estandarId },
@@ -165,16 +155,50 @@ export class EvaluacionService {
     return this.calificacionRepo.save(calificacion);
   }
 
-  // ==============================================================
-  // Evaluación cualitativa completa (guardar hoja)
-  // ==============================================================
+  async obtenerCalificacion(estandarId: number, autoevaluacionId: number) {
+    return this.getOrCreateCuantitativa(estandarId, autoevaluacionId);
+  }
 
+  private async getOrCreateCuantitativa(
+    estandarId: number,
+    autoevaluacionId: number,
+  ) {
+    let row = await this.calificacionRepo.findOne({
+      where: { estandarId, autoevaluacionId },
+    });
+    if (!row) {
+      row = this.calificacionRepo.create({
+        estandarId,
+        autoevaluacionId,
+        sistematicidad: 0,
+        proactividad: 0,
+        ciclo_evaluacion: 0,
+        despliegue_institucion: 0,
+        despliegue_cliente: 0,
+        pertinencia: 0,
+        consistencia: 0,
+        avance_medicion: 0,
+        tendencia: 0,
+        comparacion: 0,
+        total_enfoque: 0,
+        total_implementacion: 0,
+        total_resultados: 0,
+        total_estandar: 0,
+        calificacion: 0,
+        confirmado: false,
+        observaciones: null,
+      });
+      row = await this.calificacionRepo.save(row);
+    }
+    return row;
+  }
+
+  // ============================================================== Evaluación cualitativa completa
   async registrarEvaluacionCualitativa(
     estandarId: number,
     dto: CreateEvaluacionCualitativaDto,
   ) {
     const autoevaluacionId = dto.autoevaluacionId;
-
     let existing = await this.cualitativaRepo.findOne({
       where: { estandarId, autoevaluacionId },
     });
@@ -184,7 +208,6 @@ export class EvaluacionService {
         estandarId,
         autoevaluacionId,
         fortalezas: dto.fortalezas ?? [],
-        oportunidades_mejora: dto.oportunidades_mejora ?? [],
         efecto_oportunidades: dto.efecto_oportunidades ?? [],
         acciones_mejora: dto.acciones_mejora ?? [],
         limitantes_acciones: dto.limitantes_acciones ?? [],
@@ -192,10 +215,6 @@ export class EvaluacionService {
     } else {
       if (hasKey(dto, 'fortalezas')) {
         existing.fortalezas = dto.fortalezas ?? existing.fortalezas ?? [];
-      }
-      if (hasKey(dto, 'oportunidades_mejora')) {
-        existing.oportunidades_mejora =
-          dto.oportunidades_mejora ?? existing.oportunidades_mejora ?? [];
       }
       if (hasKey(dto, 'efecto_oportunidades')) {
         existing.efecto_oportunidades =
@@ -214,16 +233,14 @@ export class EvaluacionService {
     return this.cualitativaRepo.save(existing);
   }
 
-  // ==============================================================
-  // Listados y consultas
-  // ==============================================================
-
+  // ============================================================== Consultas
   async listarPorAutoevaluacion(autoevaluacionId: number) {
     const cuantitativas = await this.calificacionRepo.find({
       where: { autoevaluacionId },
     });
     const cualitativas = await this.cualitativaRepo.find({
       where: { autoevaluacionId },
+      relations: ['oportunidades', 'oportunidades.procesos'],
     });
     return { cuantitativas, cualitativas };
   }
@@ -245,39 +262,45 @@ export class EvaluacionService {
     });
   }
 
-  async obtenerCalificacion(estandarId: number) {
-    return this.calificacionRepo.findOne({ where: { estandarId } });
-  }
-
   async obtenerEvaluacionCualitativa(
     estandarId: number,
     autoevaluacionId: number,
   ) {
     const row = await this.cualitativaRepo.findOne({
       where: { estandarId, autoevaluacionId },
+      relations: ['oportunidades', 'oportunidades.procesos'],
     });
     return (
       row ?? {
         fortalezas: [],
-        oportunidades_mejora: [],
         efecto_oportunidades: [],
         acciones_mejora: [],
         limitantes_acciones: [],
+        oportunidades: [],
       }
     );
   }
 
-  // ==============================================================
-  // Fortalezas
-  // ==============================================================
+  async obtenerEvaluacionCompleta(
+    estandarId: number,
+    autoevaluacionId: number,
+  ) {
+    return this.cualitativaRepo.findOne({
+      where: { estandarId, autoevaluacionId },
+      relations: ['oportunidades', 'oportunidades.procesos'],
+    });
+  }
 
+  // ============================================================== Fortalezas / Efectos / Acciones / Limitantes
   addFortaleza(estandarId: number, dto: AddItemDto) {
     return this.updateArrayField(
       estandarId,
       dto.autoevaluacionId,
       'fortalezas',
       'add',
-      { text: dto.text },
+      {
+        text: dto.text,
+      },
     );
   }
   updateFortaleza(estandarId: number, dto: UpdateItemDto) {
@@ -286,7 +309,10 @@ export class EvaluacionService {
       dto.autoevaluacionId,
       'fortalezas',
       'edit',
-      { index: dto.index, text: dto.text },
+      {
+        index: dto.index,
+        text: dto.text,
+      },
     );
   }
   removeFortaleza(estandarId: number, dto: RemoveItemDto) {
@@ -295,45 +321,12 @@ export class EvaluacionService {
       dto.autoevaluacionId,
       'fortalezas',
       'delete',
-      { value: dto.value, index: dto.index },
+      {
+        value: dto.value,
+        index: dto.index,
+      },
     );
   }
-
-  // ==============================================================
-  // Oportunidades
-  // ==============================================================
-
-  addOportunidad(estandarId: number, dto: AddItemDto) {
-    return this.updateArrayField(
-      estandarId,
-      dto.autoevaluacionId,
-      'oportunidades_mejora',
-      'add',
-      { text: dto.text },
-    );
-  }
-  updateOportunidad(estandarId: number, dto: UpdateItemDto) {
-    return this.updateArrayField(
-      estandarId,
-      dto.autoevaluacionId,
-      'oportunidades_mejora',
-      'edit',
-      { index: dto.index, text: dto.text },
-    );
-  }
-  removeOportunidad(estandarId: number, dto: RemoveItemDto) {
-    return this.updateArrayField(
-      estandarId,
-      dto.autoevaluacionId,
-      'oportunidades_mejora',
-      'delete',
-      { value: dto.value, index: dto.index },
-    );
-  }
-
-  // ==============================================================
-  // Efecto de Oportunidades
-  // ==============================================================
 
   addEfecto(estandarId: number, dto: AddItemDto) {
     return this.updateArrayField(
@@ -363,10 +356,6 @@ export class EvaluacionService {
     );
   }
 
-  // ==============================================================
-  // Acciones de Mejora
-  // ==============================================================
-
   addAccion(estandarId: number, dto: AddItemDto) {
     return this.updateArrayField(
       estandarId,
@@ -394,10 +383,6 @@ export class EvaluacionService {
       { value: dto.value, index: dto.index },
     );
   }
-
-  // ==============================================================
-  // Limitantes
-  // ==============================================================
 
   addLimitante(estandarId: number, dto: AddItemDto) {
     return this.updateArrayField(
@@ -427,23 +412,21 @@ export class EvaluacionService {
     );
   }
 
-  // ==============================================================
-  // Evaluacion cualitativa
-  // ==============================================================
-
+  // ============================================================== Update cuantitativa
   async updateCuantitativa(dto: UpdateCalificacionDto) {
-    const { autoevaluacionId, nombre, valor } = dto;
+    const { autoevaluacionId, estandarId, nombre, valor } = dto;
 
-    const calificacion = await this.calificacionRepo.findOne({
-      where: { autoevaluacionId },
+    let calificacion = await this.calificacionRepo.findOne({
+      where: { autoevaluacionId, estandarId },
     });
+
     if (!calificacion) {
-      throw new NotFoundException(
-        `No existe registro cuantitativo para la autoevaluación ${autoevaluacionId}`,
-      );
+      calificacion = this.calificacionRepo.create({
+        autoevaluacionId,
+        estandarId,
+      });
     }
 
-    // Mapeo nombre → columna
     const mapNombreToColumn: Record<string, keyof CalificacionEstandar> = {
       'SISTEMATICIDAD Y AMPLITUD': 'sistematicidad',
       PROACTIVIDAD: 'proactividad',
@@ -456,7 +439,6 @@ export class EvaluacionService {
       TENDENCIA: 'tendencia',
       COMPARACIÓN: 'comparacion',
     };
-
     const columna = mapNombreToColumn[nombre];
 
     if (!columna) {

@@ -32,6 +32,19 @@ export class EvaluacionController {
     return this.service.registrarCalificacion(estandarId, dto);
   }
 
+  @Get('estandares/:estandarId/calificaciones')
+  obtenerCalificacion(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Query('autoevaluacionId', ParseIntPipe) autoevaluacionId: number,
+  ) {
+    return this.service.obtenerCalificacion(estandarId, autoevaluacionId);
+  }
+
+  @Patch('cuantitativa')
+  async updateCuantitativa(@Body() dto: UpdateCalificacionDto) {
+    return this.service.updateCuantitativa(dto);
+  }
+
   // --- Evaluación cualitativa completa (save) ---
   @Post('estandares/:estandarId/evaluacion-cualitativa')
   registrarEvaluacionCualitativa(
@@ -56,11 +69,6 @@ export class EvaluacionController {
     return this.service.listarEvaluacionPorAutoevaluacion(autoevaluacionId);
   }
 
-  @Get('estandares/:estandarId/calificaciones')
-  obtenerCalificacion(@Param('estandarId', ParseIntPipe) estandarId: number) {
-    return this.service.obtenerCalificacion(estandarId);
-  }
-
   @Get('estandares/:estandarId/evaluacion-cualitativa')
   obtenerEvaluacionCualitativa(
     @Param('estandarId', ParseIntPipe) estandarId: number,
@@ -70,6 +78,15 @@ export class EvaluacionController {
       estandarId,
       autoevaluacionId,
     );
+  }
+
+  // --- Evaluación cualitativa completa (incluye oportunidades + procesos) ---
+  @Get('estandares/:estandarId/evaluacion-completa')
+  obtenerEvaluacionCompleta(
+    @Param('estandarId', ParseIntPipe) estandarId: number,
+    @Query('autoevaluacionId', ParseIntPipe) autoevaluacionId: number,
+  ) {
+    return this.service.obtenerEvaluacionCompleta(estandarId, autoevaluacionId);
   }
 
   // --- Fortalezas ---
@@ -95,31 +112,6 @@ export class EvaluacionController {
     @Body() dto: RemoveItemDto,
   ) {
     return this.service.removeFortaleza(estandarId, dto);
-  }
-
-  // --- Oportunidades ---
-  @Post('estandares/:estandarId/evaluacion-cualitativa/oportunidades_mejora')
-  addOportunidad(
-    @Param('estandarId', ParseIntPipe) estandarId: number,
-    @Body() dto: AddItemDto,
-  ) {
-    return this.service.addOportunidad(estandarId, dto);
-  }
-
-  @Patch('estandares/:estandarId/evaluacion-cualitativa/oportunidades_mejora')
-  updateOportunidad(
-    @Param('estandarId', ParseIntPipe) estandarId: number,
-    @Body() dto: UpdateItemDto,
-  ) {
-    return this.service.updateOportunidad(estandarId, dto);
-  }
-
-  @Delete('estandares/:estandarId/evaluacion-cualitativa/oportunidades_mejora')
-  removeOportunidad(
-    @Param('estandarId', ParseIntPipe) estandarId: number,
-    @Body() dto: RemoveItemDto,
-  ) {
-    return this.service.removeOportunidad(estandarId, dto);
   }
 
   // --- Efecto de Oportunidades ---
@@ -195,12 +187,5 @@ export class EvaluacionController {
     @Body() dto: RemoveItemDto,
   ) {
     return this.service.removeLimitante(estandarId, dto);
-  }
-
-  // --- Evaluacion cualitativa ---
-
-  @Patch('cuantitativa')
-  async updateCuantitativa(@Body() dto: UpdateCalificacionDto) {
-    return this.service.updateCuantitativa(dto);
   }
 }
