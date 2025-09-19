@@ -6,6 +6,7 @@ import { Autoevaluacion } from './entities/autoevaluacion.entity';
 import { Estandar } from 'src/evaluacion/entities/estandar.entity';
 import { CalificacionEstandar } from 'src/evaluacion/entities/calificacion.entity';
 import { EvaluacionCualitativaEstandar } from 'src/evaluacion/entities/evaluacion.entity';
+import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { EvaluacionCualitativaEstandar } from 'src/evaluacion/entities/evaluacio
       Estandar,
       CalificacionEstandar,
       EvaluacionCualitativaEstandar,
+      OportunidadMejoraEstandar,
     ]),
   ],
   controllers: [AutoevaluacionController],

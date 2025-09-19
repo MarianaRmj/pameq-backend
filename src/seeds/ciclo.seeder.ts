@@ -18,7 +18,7 @@ export class CycleSeeder {
   ) {}
 
   async run() {
-    const nombres = ['1', '2', 'A'];
+    const nombres = ['1'];
     const sedes: Sede[] = [];
 
     for (const nombre of nombres) {

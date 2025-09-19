@@ -49,6 +49,7 @@ export class ProcessesController {
   // 🔹 Guardar selección de procesos
   @Post('seleccion')
   guardarSeleccion(@Body() dto: SelectProcessDto) {
+    console.log('📥 Body recibido en /processes/seleccion:', dto);
     return this.processesService.guardarSeleccion(dto);
   }
 

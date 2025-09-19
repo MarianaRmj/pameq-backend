@@ -13,9 +13,12 @@ import { IndicadorProceso } from './entities/indicador-proceso.entity';
 import { EvaluacionCualitativaEstandar } from 'src/evaluacion/entities/evaluacion.entity';
 import { Estandar } from 'src/evaluacion/entities/estandar.entity';
 import { SelectProcessDto } from './dto/select-process.dto';
-import { EstandarSeleccionado } from 'src/evaluacion/entities/estandares-seleccionados.entity';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
+import { CicloEstado } from 'src/cycles/enums/ciclo-estado.enum';
 import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
+import { SeleccionProceso } from './entities/SeleccionProceso.entity';
+
+type RecuentoRaw = { id: string; proceso: string; oportunidades: string };
 
 @Injectable()
 export class ProcessesService {
@@ -32,14 +35,17 @@ export class ProcessesService {
     @InjectRepository(EvaluacionCualitativaEstandar)
     private readonly cualitativaRepo: Repository<EvaluacionCualitativaEstandar>,
 
+    @InjectRepository(SeleccionProceso) // 👈 ahora sí
+    private readonly seleccionRepo: Repository<SeleccionProceso>,
+
     @InjectRepository(Estandar)
     private readonly estandarRepo: Repository<Estandar>,
 
-    @InjectRepository(EstandarSeleccionado)
-    private readonly seleccionRepo: Repository<EstandarSeleccionado>,
-
     @InjectRepository(OportunidadMejoraEstandar)
     private readonly oportunidadRepo: Repository<OportunidadMejoraEstandar>,
+
+    @InjectRepository(Ciclo) // 👈 aquí
+    private readonly cicloRepo: Repository<Ciclo>,
   ) {}
 
   // ============= CRUD de Procesos =============
@@ -135,37 +141,41 @@ export class ProcessesService {
   }
 
   // ============= NUEVO MÉTODO: Recuento de Oportunidades =============
+
   async contarOportunidadesPorProceso(cicloId: number) {
     const raw = await this.oportunidadRepo
       .createQueryBuilder('op')
       .innerJoin('op.evaluacion', 'eval')
-      .innerJoin('op.proceso', 'proceso')
+      .innerJoin('op.procesos', 'proceso') // 👈 relación ManyToMany
       .where(
         'eval.autoevaluacion_id IN (SELECT id FROM autoevaluaciones WHERE ciclo = :cicloId)',
         { cicloId },
       )
-      .select('proceso.id', 'id') // 👈 añadimos el id del proceso
+      .select('proceso.id', 'id')
       .addSelect('proceso.nombre_proceso', 'proceso')
       .addSelect('COUNT(op.id)', 'oportunidades')
       .groupBy('proceso.id')
       .addGroupBy('proceso.nombre_proceso')
       .orderBy('oportunidades', 'DESC')
-      .getRawMany();
+      .getRawMany<RecuentoRaw>(); // 👈 aquí tipamos el resultado
 
-    console.log('🔎 Recuento generado:', raw);
-
-    return (
-      raw as Array<{ id: string; proceso: string; oportunidades: string }>
-    ).map((r) => ({
-      id: Number(r.id), // 👈 ya tienes el id como number
+    return raw.map((r) => ({
+      id: Number(r.id),
       proceso: r.proceso,
       oportunidades: Number(r.oportunidades),
     }));
   }
 
   async guardarSeleccion(dto: SelectProcessDto) {
-    const seleccion = {
-      ciclo: { id: dto.cicloId } as Ciclo,
+    console.log('📥 Body recibido en /processes/seleccion:', dto);
+
+    const ciclo = await this.cicloRepo.findOne({
+      where: { estado: CicloEstado.ACTIVO },
+    });
+    if (!ciclo) throw new Error('⚠️ No hay ciclo activo configurado');
+
+    const seleccion = this.seleccionRepo.create({
+      ciclo,
       proceso: { id: dto.procesoId } as Proceso,
       estandar: dto.estandarId
         ? ({ id: dto.estandarId } as Estandar)
@@ -173,19 +183,35 @@ export class ProcessesService {
       usuario_id: dto.usuarioId,
       seleccionado: dto.seleccion,
       observaciones: dto.observaciones,
-    };
+    });
 
     return this.seleccionRepo.save(seleccion);
   }
 
   async listarSeleccionadosPorCiclo(cicloId: number) {
-    return this.seleccionRepo
+    const selecciones = await this.seleccionRepo
       .createQueryBuilder('sel')
       .leftJoinAndSelect('sel.proceso', 'proceso')
-      .leftJoinAndSelect('sel.ciclo', 'ciclo')
-      .leftJoinAndSelect('sel.estandar', 'estandar')
+      .leftJoin('sel.ciclo', 'ciclo')
       .where('ciclo.id = :cicloId', { cicloId })
-      .orderBy('sel.fecha_registro', 'DESC')
       .getMany();
+
+    return selecciones.map((s) => {
+      const proceso = s.proceso;
+      return {
+        id: s.id,
+        proceso: {
+          id: proceso.id,
+          nombre_proceso:
+            proceso.nombre_proceso ??
+            (typeof proceso === 'object' && 'nombre' in proceso
+              ? (proceso as { nombre: string }).nombre
+              : undefined),
+        },
+        seleccionado: s.seleccionado,
+        observaciones: s.observaciones,
+        usuario_id: s.usuario_id,
+      };
+    });
   }
 }

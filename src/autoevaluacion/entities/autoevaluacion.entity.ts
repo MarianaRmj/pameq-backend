@@ -17,6 +17,7 @@ export class Autoevaluacion {
   @Column() sede_id: number;
   @Column() usuario_id: number;
   @Column() ciclo: string;
+
   @CreateDateColumn({ name: 'fecha_evaluacion' }) fechaEvaluacion: Date;
   @ManyToMany(() => Estandar, (e) => e.autoevaluaciones)
   @JoinTable()

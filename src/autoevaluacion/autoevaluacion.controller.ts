@@ -20,6 +20,11 @@ export class AutoevaluacionController {
     return this.service.crear(dto);
   }
 
+  @Get(':cicloId/oportunidades')
+  async listarOportunidades(@Param('cicloId') cicloId: string) {
+    return this.service.listarEstandaresConOportunidades(cicloId);
+  }
+
   @Get(':ciclo')
   listar(@Param('ciclo') ciclo: string) {
     return this.service.listarPorCiclo(ciclo);

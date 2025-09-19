@@ -4,19 +4,25 @@ import { ProcessesService } from './processes.service';
 import { ProcessesController } from './processes.controller';
 import { Proceso } from './entities/process.entity';
 import { IndicadorProceso } from './entities/indicador-proceso.entity';
+import { SeleccionProceso } from './entities/SeleccionProceso.entity';
 import { Institution } from 'src/institutions/entities/institution.entity';
-import { EstandarSeleccionado } from 'src/evaluacion/entities/estandares-seleccionados.entity';
-import { EvaluacionModule } from 'src/evaluacion/evaluacion.module'; // 👈 aquí
+import { Estandar } from 'src/evaluacion/entities/estandar.entity';
+import { EvaluacionCualitativaEstandar } from 'src/evaluacion/entities/evaluacion.entity';
+import { Ciclo } from 'src/cycles/entities/cycle.entity';
+import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
       Proceso,
-      Institution,
       IndicadorProceso,
-      EstandarSeleccionado,
+      SeleccionProceso, // ✅ aquí
+      Institution,
+      Estandar,
+      EvaluacionCualitativaEstandar,
+      OportunidadMejoraEstandar,
+      Ciclo,
     ]),
-    EvaluacionModule, // 👈 ahora sí está disponible el repo de EvaluacionCualitativaEstandar
   ],
   controllers: [ProcessesController],
   providers: [ProcessesService],

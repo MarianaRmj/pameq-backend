@@ -5,12 +5,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Autoevaluacion } from './entities/autoevaluacion.entity';
 import { CreateAutoevaluacionDto } from './dto/create-autoevaluacion.dto';
 import { Estandar } from 'src/evaluacion/entities/estandar.entity';
 import { CalificacionEstandar } from 'src/evaluacion/entities/calificacion.entity';
 import { EvaluacionCualitativaEstandar } from 'src/evaluacion/entities/evaluacion.entity';
+import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
 
 @Injectable()
 export class AutoevaluacionService {
@@ -21,11 +22,16 @@ export class AutoevaluacionService {
     @InjectRepository(Estandar)
     private readonly estandarRepo: Repository<Estandar>,
 
+    @InjectRepository(OportunidadMejoraEstandar)
+    private readonly oportunidadRepo: Repository<OportunidadMejoraEstandar>,
+
     @InjectRepository(CalificacionEstandar)
     private readonly calificacionRepo: Repository<CalificacionEstandar>,
 
     @InjectRepository(EvaluacionCualitativaEstandar)
     private readonly cualitativaRepo: Repository<EvaluacionCualitativaEstandar>, // 👈 agregado
+
+    private readonly dataSource: DataSource, // 👈 ahora sí existe
   ) {}
 
   async crear(dto: CreateAutoevaluacionDto) {
@@ -113,5 +119,53 @@ export class AutoevaluacionService {
     }
 
     return { confirmado: !!calificacion.confirmado };
+  }
+
+  async listarEstandaresConOportunidades(ciclo: string) {
+    const oportunidades = await this.oportunidadRepo
+      .createQueryBuilder('oportunidad')
+      .innerJoinAndSelect('oportunidad.estandar', 'estandar')
+      .innerJoinAndSelect('oportunidad.procesos', 'proceso')
+      .innerJoin('estandar.autoevaluaciones', 'auto')
+      .where('auto.ciclo = :ciclo', { ciclo })
+      .getMany();
+
+    // Agrupar por estándar
+    type EstandarConOportunidades = {
+      id: number;
+      codigo: string;
+      descripcion: string;
+      oportunidades: Array<{
+        id: number;
+        descripcion: string;
+        procesos: any; // Replace 'any' with the actual type if known
+      }>;
+    };
+
+    const map = new Map<number, EstandarConOportunidades>();
+
+    oportunidades.forEach((o) => {
+      const e = o.estandar;
+      if (!map.has(e.id)) {
+        map.set(e.id, {
+          id: e.id,
+          codigo: e.codigo,
+          descripcion: e.descripcion,
+          oportunidades: [],
+        });
+      }
+      const estandar = map.get(e.id)!;
+      estandar.oportunidades.push({
+        id: o.id,
+        descripcion: o.descripcion,
+        procesos: o.procesos.map((p) => ({
+          id: p.id,
+          nombre: p.nombre_proceso, // 👈 normalizado
+        })),
+      });
+    });
+    console.log('📦 Oportunidades agrupadas:', Array.from(map.values()));
+
+    return Array.from(map.values());
   }
 }

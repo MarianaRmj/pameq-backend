@@ -13,10 +13,10 @@ import { Institution } from 'src/institutions/entities/institution.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Event } from 'src/event/entities/event.entity';
 import { Proceso } from 'src/processes/entities/process.entity';
-
+import { IndicadorProceso } from 'src/processes/entities/indicador-proceso.entity';
+import { SeleccionProceso } from 'src/processes/entities/SeleccionProceso.entity';
 import * as XLSX from 'xlsx';
 import * as path from 'path';
-import { IndicadorProceso } from 'src/processes/entities/indicador-proceso.entity';
 
 // 📌 Debug de variables de entorno
 console.log('🔑 DB Config:');
@@ -50,6 +50,7 @@ const seedDataSource = new DataSource({
     Event,
     Proceso,
     IndicadorProceso,
+    SeleccionProceso,
   ],
 });
 

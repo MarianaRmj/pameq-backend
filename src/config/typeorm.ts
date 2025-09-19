@@ -28,6 +28,7 @@ const config: DataSourceOptions = process.env.DATABASE_URL
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       synchronize: true,
+
       entities: [
         Estandar,
         Autoevaluacion,
