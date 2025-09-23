@@ -17,6 +17,7 @@ import {
   UpdateItemDto,
 } from './entities/qualitative-item.dto';
 import { UpdateCalificacionDto } from './dto/UpdateCalificacionDto';
+import { FortalezaEstandar } from 'src/fortalezas/entities/fortaleza.entity';
 
 function hasKey<T extends object>(obj: T, key: string | symbol): boolean {
   return !!Object.prototype.hasOwnProperty.call(obj, key as PropertyKey);
@@ -33,6 +34,8 @@ export class EvaluacionService {
     private estandarRepo: Repository<Estandar>,
     @InjectRepository(Autoevaluacion)
     private autoevaluacionRepo: Repository<Autoevaluacion>,
+    @InjectRepository(FortalezaEstandar)
+    private fortalezasRepo: Repository<FortalezaEstandar>,
   ) {}
 
   // ============================================================== Helpers
@@ -226,14 +229,15 @@ export class EvaluacionService {
       existing = this.cualitativaRepo.create({
         estandarId,
         autoevaluacionId,
-        fortalezas: dto.fortalezas ?? [],
+        fortalezas_json: dto.fortalezas ?? [],
         efecto_oportunidades: dto.efecto_oportunidades ?? [],
         acciones_mejora: dto.acciones_mejora ?? [],
         limitantes_acciones: dto.limitantes_acciones ?? [],
       });
     } else {
       if (hasKey(dto, 'fortalezas')) {
-        existing.fortalezas = dto.fortalezas ?? existing.fortalezas ?? [];
+        existing.fortalezas_json =
+          dto.fortalezas ?? existing.fortalezas_json ?? [];
       }
       if (hasKey(dto, 'efecto_oportunidades')) {
         existing.efecto_oportunidades =
@@ -287,8 +291,14 @@ export class EvaluacionService {
   ) {
     const row = await this.cualitativaRepo.findOne({
       where: { estandarId, autoevaluacionId },
-      relations: ['oportunidades', 'oportunidades.procesos'],
+      relations: [
+        'fortalezas',
+        'fortalezas.procesos',
+        'oportunidades',
+        'oportunidades.procesos',
+      ],
     });
+
     return (
       row ?? {
         fortalezas: [],
@@ -322,6 +332,7 @@ export class EvaluacionService {
       },
     );
   }
+
   updateFortaleza(estandarId: number, dto: UpdateItemDto) {
     return this.updateArrayField(
       estandarId,
@@ -334,6 +345,7 @@ export class EvaluacionService {
       },
     );
   }
+
   removeFortaleza(estandarId: number, dto: RemoveItemDto) {
     return this.updateArrayField(
       estandarId,

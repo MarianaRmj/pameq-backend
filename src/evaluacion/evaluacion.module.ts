@@ -8,6 +8,7 @@ import { EvaluacionService } from './evaluacion.service';
 import { EvaluacionController } from './evaluacion.controller';
 import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
+import { FortalezaEstandar } from 'src/fortalezas/entities/fortaleza.entity';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oport
       Estandar,
       Autoevaluacion,
       OportunidadMejoraEstandar,
+      FortalezaEstandar,
     ]),
   ],
   providers: [EvaluacionService],

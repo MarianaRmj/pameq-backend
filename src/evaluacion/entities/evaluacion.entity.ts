@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
 import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
+import { FortalezaEstandar } from 'src/fortalezas/entities/fortaleza.entity';
 
 @Index(['estandarId', 'autoevaluacionId'], { unique: true })
 @Entity('evaluacion_cualitativa')
@@ -24,7 +25,7 @@ export class EvaluacionCualitativaEstandar {
   autoevaluacionId: number;
 
   @Column({ type: 'jsonb', nullable: false, default: () => "'[]'::jsonb" })
-  fortalezas: string[];
+  fortalezas_json: string[];
 
   @Column({ type: 'jsonb', nullable: false, default: () => "'[]'::jsonb" })
   oportunidades_mejora: string[];
@@ -47,6 +48,11 @@ export class EvaluacionCualitativaEstandar {
     { cascade: true },
   )
   oportunidades: OportunidadMejoraEstandar[];
+
+  @OneToMany(() => FortalezaEstandar, (fortaleza) => fortaleza.evaluacion, {
+    cascade: true,
+  })
+  fortalezas: FortalezaEstandar[];
 
   @ManyToOne(() => Autoevaluacion, (autoeval) => autoeval.evaluaciones, {
     onDelete: 'CASCADE',

@@ -17,6 +17,7 @@ import { IndicadorProceso } from 'src/processes/entities/indicador-proceso.entit
 import { SeleccionProceso } from 'src/processes/entities/SeleccionProceso.entity';
 import * as XLSX from 'xlsx';
 import * as path from 'path';
+import { FortalezaEstandar } from 'src/fortalezas/entities/fortaleza.entity';
 
 // 📌 Debug de variables de entorno
 console.log('🔑 DB Config:');
@@ -51,6 +52,7 @@ const seedDataSource = new DataSource({
     Proceso,
     IndicadorProceso,
     SeleccionProceso,
+    FortalezaEstandar,
   ],
 });
 

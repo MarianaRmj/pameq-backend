@@ -29,6 +29,7 @@ import { DetallePriorizacionModule } from './detalle-priorizacion/detalle-priori
 import { CalidadEsperadaModule } from './calidad-esperada/calidad-esperada.module';
 import { EvidenciaFortalezaModule } from './evidencia-fortaleza/evidencia-fortaleza.module';
 import { OportunidadMejoraModule } from './oportunidad-mejora/oportunidad-mejora.module';
+import { FortalezasModule } from './fortalezas/fortalezas.module';
 import * as path from 'path';
 
 @Module({
@@ -85,6 +86,7 @@ import * as path from 'path';
     CalidadEsperadaModule,
     EvidenciaFortalezaModule,
     OportunidadMejoraModule,
+    FortalezasModule,
   ],
 })
 export class AppModule {}

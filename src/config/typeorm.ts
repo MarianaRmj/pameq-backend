@@ -18,7 +18,7 @@ const config: DataSourceOptions = process.env.DATABASE_URL
       migrations: [
         isDev ? 'src/migrations/*{.ts,.js}' : 'dist/migrations/*{.ts,.js}',
       ],
-      dropSchema: false, // Solo true en dev
+      dropSchema: true, // Solo true en dev
     }
   : {
       type: 'postgres',
