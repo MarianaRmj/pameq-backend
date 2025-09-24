@@ -19,7 +19,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import type { StorageEngine } from 'multer';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Process } from './entities/process.entity';
+import { Proceso } from 'src/processes/entities/process.entity';
 import { Repository } from 'typeorm';
 
 // Storage de evidencias
@@ -32,8 +32,8 @@ function evidenceMemoryStorage(): StorageEngine {
 export class ActivitiesController {
   constructor(
     private readonly service: ActivitiesService,
-    @InjectRepository(Process)
-    private readonly processRepo: Repository<Process>,
+    @InjectRepository(Proceso)
+    private readonly processRepo: Repository<Proceso>,
   ) {}
 
   @Post()
@@ -95,7 +95,7 @@ export class ActivitiesController {
   async getProcesses() {
     return this.processRepo.find({
       where: { activo: true },
-      order: { nombre: 'ASC' },
+      order: { nombre_proceso: 'ASC' },
     });
   }
 }

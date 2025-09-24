@@ -1,13 +1,4 @@
-import {
-  IsInt,
-  IsOptional,
-  IsString,
-  IsISO8601,
-  IsArray,
-  ArrayNotEmpty,
-  ArrayUnique,
-  IsIn,
-} from 'class-validator';
+import { IsInt, IsOptional, IsString, IsISO8601, IsIn } from 'class-validator';
 
 export class CreateActivityDto {
   @IsString()
@@ -46,8 +37,6 @@ export class CreateActivityDto {
   responsableId!: number;
 
   @IsOptional()
-  @IsArray()
-  @ArrayNotEmpty()
-  @ArrayUnique()
+  @IsInt({ each: true })
   procesosIds?: number[];
 }

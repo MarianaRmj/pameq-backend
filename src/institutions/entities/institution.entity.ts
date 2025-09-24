@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { Sede } from 'src/sedes/entities/sede.entity';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
+import { Proceso } from 'src/processes/entities/process.entity';
 
 @Entity('institucion')
 export class Institution {
@@ -43,5 +44,8 @@ export class Institution {
   @OneToMany(() => Ciclo, (ciclo) => ciclo.institution, {
     cascade: true,
   })
-  ciclos: Ciclo[]; // ✅ Aquí defines el tipo correcto
+  ciclos: Ciclo[];
+
+  @OneToMany(() => Proceso, (proceso) => proceso.institution)
+  procesos: Proceso[];
 }

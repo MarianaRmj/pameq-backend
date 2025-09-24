@@ -5,9 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, In, SelectQueryBuilder } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { Activity } from './entities/activity.entity';
-import { Process } from './entities/process.entity';
 import { Evidence } from './entities/evidence.entity';
 import { CreateActivityDto } from './dto/create-activity.dto';
 import { UpdateActivityDto } from './dto/update-activity.dto';
@@ -18,6 +17,7 @@ import { Sede } from 'src/sedes/entities/sede.entity';
 import { User } from 'src/users/entities/user.entity';
 import { EventsService } from 'src/event/event.service';
 import { GoogleDriveService } from 'src/storage/google-drive.service';
+import { Proceso } from 'src/processes/entities/process.entity';
 
 // Helpers para evitar "unsafe" en ESLint
 
@@ -33,12 +33,12 @@ function safeRemoteName(original: string) {
 export class ActivitiesService {
   constructor(
     @InjectRepository(Activity) private repo: Repository<Activity>,
-    @InjectRepository(Process) private processRepo: Repository<Process>,
     @InjectRepository(Evidence) private evidenceRepo: Repository<Evidence>,
     @InjectRepository(Institution) private instRepo: Repository<Institution>,
     @InjectRepository(Sede) private sedeRepo: Repository<Sede>,
     @InjectRepository(Ciclo) private cicloRepo: Repository<Ciclo>,
     @InjectRepository(User) private userRepo: Repository<User>,
+    @InjectRepository(Proceso) private procesoRepo: Repository<Proceso>,
     private readonly eventsService: EventsService,
     private readonly drive: GoogleDriveService,
   ) {}
@@ -98,13 +98,13 @@ export class ActivitiesService {
     });
 
     if (dto.procesosIds?.length) {
-      const procesos = await this.processRepo.findBy({
+      const procesos = await this.procesoRepo.findBy({
         id: In(dto.procesosIds),
       });
       if (procesos.length !== dto.procesosIds.length) {
-        throw new BadRequestException('Algún proceso invitado no existe');
+        throw new BadRequestException('Algún proceso no existe');
       }
-      activity.procesos_invitados = procesos;
+      activity.procesos = procesos;
     }
 
     const saved = await this.repo.save(activity);
@@ -163,16 +163,17 @@ export class ActivitiesService {
       );
 
     if (dto.procesosIds) {
-      const procesos = await this.processRepo.findBy({
+      const procesos = await this.procesoRepo.findBy({
         id: In(dto.procesosIds),
       });
       if (procesos.length !== dto.procesosIds.length) {
-        throw new BadRequestException('Algún proceso invitado no existe');
+        throw new BadRequestException('Algún proceso no existe');
       }
-      a.procesos_invitados = procesos;
+      a.procesos = procesos;
     }
 
-    Object.assign(a, { ...dto, procesosIds: undefined });
+    Object.assign(a, { ...dto, procesoId: a.procesoId });
+
     const updated = await this.repo.save(a);
 
     // 🔗 refleja cambios en el calendario
@@ -194,7 +195,8 @@ export class ActivitiesService {
   async findAll(filters: FilterActivityDto) {
     const qb = this.repo
       .createQueryBuilder('a')
-      .leftJoinAndSelect('a.procesos_invitados', 'p')
+      .leftJoinAndSelect('a.responsable', 'r') //
+      .leftJoinAndSelect('a.procesos', 'p')
       .leftJoinAndSelect('a.evidencias', 'e');
 
     this.applyFilters(qb, filters);
@@ -218,7 +220,7 @@ export class ActivitiesService {
   async findOne(id: number) {
     const a = await this.repo.findOne({
       where: { id },
-      relations: ['evidencias', 'procesos_invitados'],
+      relations: ['responsable', 'evidencias', 'procesos'],
     });
     if (!a) throw new NotFoundException('Actividad no encontrada');
     return a;
@@ -316,9 +318,10 @@ export class ActivitiesService {
       select: ['id', 'nombre'],
     });
 
-    const procesos = await this.processRepo.find({
-      select: ['id', 'nombre'],
-      order: { nombre: 'ASC' },
+    const procesos = await this.procesoRepo.find({
+      where: { institution: { id: institutionId } },
+      select: ['id', 'nombre_proceso'] as (keyof Proceso)[],
+      order: { nombre_proceso: 'ASC' },
     });
 
     return {
@@ -329,7 +332,11 @@ export class ActivitiesService {
       ciclo,
       sedes,
       responsables,
-      procesos,
+      procesos: procesos.map((p) => ({
+        id: p.id,
+        nombre_proceso: p.nombre_proceso, // 👈 coincide con frontend
+        activo: true, // 👈 si no está en BD, lo marcas por defecto
+      })),
     };
   }
 }

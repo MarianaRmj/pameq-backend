@@ -4,12 +4,12 @@ import {
   Column,
   ManyToOne,
   OneToMany,
-  ManyToMany,
-  JoinTable,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
   Relation,
+  JoinTable,
+  ManyToMany,
 } from 'typeorm';
 
 import { Institution } from 'src/institutions/entities/institution.entity';
@@ -17,7 +17,7 @@ import { Sede } from 'src/sedes/entities/sede.entity';
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Evidence } from './evidence.entity';
-import { Process } from './process.entity';
+import { Proceso } from 'src/processes/entities/process.entity';
 
 export type EstadoActividad =
   | 'programada'
@@ -84,9 +84,12 @@ export class Activity {
   responsableId!: number;
 
   // Procesos invitados
-  @ManyToMany((): typeof Process => Process, { eager: true })
-  @JoinTable({ name: 'actividad_proceso' })
-  procesos_invitados!: Relation<Process>[];
+  @ManyToMany(() => Proceso, { eager: true })
+  @JoinTable({ name: 'actividad_procesos' })
+  procesos!: Relation<Proceso>[];
+
+  @Column({ nullable: true })
+  procesoId?: number;
 
   // Evidencias
   @OneToMany(

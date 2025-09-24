@@ -4,6 +4,7 @@ import { loggerGlobal } from './middleware/logger.middleware';
 import { SeedModule } from './seeds/seed.module';
 import { UserAdminSeeder } from './seeds/user-admin.seeder';
 import { InstitutionSedeSeeder } from './seeds/institution-sede.seeder';
+import { ProcessSeeder } from './seeds/process.seed';
 import { CycleSeeder } from './seeds/ciclo.seeder';
 
 async function bootstrap() {
@@ -27,6 +28,9 @@ async function bootstrap() {
 
   const userSeeder = seedModule.get(UserAdminSeeder);
   await userSeeder.run(); // ✅ Luego usuario
+
+  const processSeeder = seedModule.get(ProcessSeeder);
+  await processSeeder.run(); // ✅ Luego procesos
 
   await app.listen(process.env.PORT || 3001);
 }

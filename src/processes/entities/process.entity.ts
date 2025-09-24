@@ -41,4 +41,7 @@ export class Proceso {
 
   @OneToMany(() => Estandar, (estandar) => estandar.proceso)
   estandares: Estandar[];
+
+  @Column({ default: true })
+  activo: boolean;
 }
