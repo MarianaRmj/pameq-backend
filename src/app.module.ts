@@ -22,11 +22,11 @@ import { ProcessesModule } from './processes/processes.module';
 import { PamecModule } from './pamec/pamec.module';
 import { EvaluacionModule } from './evaluacion/evaluacion.module';
 import { AutoevaluacionModule } from './autoevaluacion/autoevaluacion.module';
-import { HojaRadarModule } from './hoja-radar/hoja-radar.module';
-import { PriorizacionModule } from './priorizacion/priorizacion.module';
-import { PlanMejoramientoModule } from './plan-mejoramiento/plan-mejoramiento.module';
-import { DetallePriorizacionModule } from './detalle-priorizacion/detalle-priorizacion.module';
-import { CalidadEsperadaModule } from './calidad-esperada/calidad-esperada.module';
+// import { HojaRadarModule } from './hoja-radar/hoja-radar.module';
+// import { PriorizacionModule } from './priorizacion/priorizacion.module';
+// import { PlanMejoramientoModule } from './plan-mejoramiento/plan-mejoramiento.module';
+// import { DetallePriorizacionModule } from './detalle-priorizacion/detalle-priorizacion.module';
+// import { CalidadEsperadaModule } from './calidad-esperada/calidad-esperada.module';
 import { EvidenciaFortalezaModule } from './evidencia-fortaleza/evidencia-fortaleza.module';
 import { OportunidadMejoraModule } from './oportunidad-mejora/oportunidad-mejora.module';
 import { FortalezasModule } from './fortalezas/fortalezas.module';
@@ -79,11 +79,11 @@ import * as path from 'path';
     PamecModule,
     EvaluacionModule,
     AutoevaluacionModule,
-    HojaRadarModule,
-    PriorizacionModule,
-    PlanMejoramientoModule,
-    DetallePriorizacionModule,
-    CalidadEsperadaModule,
+    // HojaRadarModule,
+    // PriorizacionModule,
+    // PlanMejoramientoModule,
+    // DetallePriorizacionModule,
+    // CalidadEsperadaModule,
     EvidenciaFortalezaModule,
     OportunidadMejoraModule,
     FortalezasModule,

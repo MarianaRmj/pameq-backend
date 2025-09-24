@@ -22,29 +22,44 @@ function toDateOrNull(v?: string): Date | null {
   return isNaN(d.getTime()) ? null : d;
 }
 
+// Canon EXACTO que debe existir en la BD (enum cronograma_estado_enum)
 export type EstadoCanon = 'pendiente' | 'en_curso' | 'finalizado';
 
-export function normalizeEstado(input?: string): EstadoCanon | undefined {
-  if (!input) return undefined;
-  const s = input.toLowerCase().trim().replace(/\s+/g, ' '); // normaliza espacios
+const ESTADO_MAP: Record<string, EstadoCanon> = {
+  // variantes "humanas"
+  pendiente: 'pendiente',
+  'en curso': 'en_curso',
+  'en proceso': 'en_curso',
+  'en progreso': 'en_curso',
 
-  const map: Record<string, EstadoCanon> = {
-    // Comunes del front
-    pendiente: 'pendiente',
-    'en progreso': 'en_curso',
-    'en proceso': 'en_curso',
+  // variantes con guion/underscore
+  en_curso: 'en_curso',
+  en_proceso: 'en_curso',
+  en_progreso: 'en_curso',
 
-    // Con guion bajo
-    en_curso: 'en_curso',
-    en_progreso: 'en_curso',
-    en_proceso: 'en_curso',
+  // opcionales (palabra suelta)
+  curso: 'en_curso',
+  proceso: 'en_curso',
+  progreso: 'en_curso',
 
-    // Finalizado (acepta femenino por si acaso)
-    finalizado: 'finalizado',
-    finalizada: 'finalizado',
-  };
+  // finalizado (acepta femenino)
+  finalizado: 'finalizado',
+  finalizada: 'finalizado',
+};
 
-  return map[s];
+export function normalizeEstado(
+  input?: string,
+  def?: EstadoCanon,
+): EstadoCanon | undefined {
+  if (!input) return def;
+  const s = String(input)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '') // quita tildes
+    .replace(/[_-]+/g, ' ') // unifica _ y - a espacio
+    .trim()
+    .replace(/\s+/g, ' '); // colapsa espacios
+  return ESTADO_MAP[s] ?? def;
 }
 // -------------------------------------------
 
@@ -66,13 +81,8 @@ export class ScheduleTaskService {
       ...dto,
       fecha_comienzo: fc,
       fecha_fin: ff,
-      estado: (() => {
-        const normalized = normalizeEstado(dto.estado);
-        if (normalized === 'en_curso') return 'en proceso';
-        if (normalized === 'pendiente' || normalized === 'finalizado')
-          return normalized;
-        return undefined;
-      })(),
+      // ✅ siempre guardamos el canon de BD (snake_case)
+      estado: normalizeEstado(dto.estado, 'pendiente'),
       predecesoras: dto.predecesoras?.trim() ? dto.predecesoras : null,
       parentId:
         (typeof dto === 'object' &&
@@ -83,6 +93,7 @@ export class ScheduleTaskService {
           ? null
           : Number((dto as { parentId?: any }).parentId),
     });
+
     return await this.scheduleTaskRepo.save(task);
   }
 
@@ -134,11 +145,11 @@ export class ScheduleTaskService {
       toAssign.fecha_fin = ff;
     }
 
-    // normalizar estado
+    // ✅ normalizar estado a canon BD (sin espacios)
     if (dto.estado !== undefined) {
-      const normalizedEstado = normalizeEstado(dto.estado);
-      toAssign.estado =
-        normalizedEstado === 'en_curso' ? 'en proceso' : normalizedEstado;
+      const normalized = normalizeEstado(dto.estado);
+      if (!normalized) throw new BadRequestException('estado inválido');
+      toAssign.estado = normalized; // 'pendiente' | 'en_curso' | 'finalizado'
     }
 
     // normalizar predecesoras (string o null)

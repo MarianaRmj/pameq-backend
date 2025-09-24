@@ -9,8 +9,9 @@ import {
 import { Ciclo } from 'src/cycles/entities/cycle.entity';
 import { Sede } from '../../sedes/entities/sede.entity';
 import { Institution } from '../../institutions/entities/institution.entity';
+import { EstadoCanon } from '../schedule.service';
 
-export type EstadoTarea = 'pendiente' | 'en proceso' | 'finalizado';
+export type EstadoTarea = 'pendiente' | 'en curso' | 'finalizado';
 
 @Entity('cronograma')
 export class ScheduleTask {
@@ -31,11 +32,11 @@ export class ScheduleTask {
 
   @Column({
     type: 'enum',
+    enumName: 'cronograma_estado_enum',
     enum: ['pendiente', 'en_curso', 'finalizado'],
     default: 'pendiente',
-    nullable: true,
   })
-  estado?: EstadoTarea;
+  estado: EstadoCanon;
 
   @Column({ nullable: true })
   responsable: string;

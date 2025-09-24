@@ -1,17 +1,17 @@
-// src/evaluacion/dto/create-detalle-priorizacion.dto.ts
+// // src/evaluacion/dto/create-detalle-priorizacion.dto.ts
 
-import { IsOptional, IsString } from 'class-validator';
+// import { IsOptional, IsString } from 'class-validator';
 
-export class CreateDetallePriorizacionDto {
-  @IsOptional()
-  @IsString()
-  fortalezas?: string;
+// export class CreateDetallePriorizacionDto {
+//   @IsOptional()
+//   @IsString()
+//   fortalezas?: string;
 
-  @IsOptional()
-  @IsString()
-  oportunidades_mejora?: string;
+//   @IsOptional()
+//   @IsString()
+//   oportunidades_mejora?: string;
 
-  @IsOptional()
-  @IsString()
-  observaciones?: string;
-}
+//   @IsOptional()
+//   @IsString()
+//   observaciones?: string;
+// }
