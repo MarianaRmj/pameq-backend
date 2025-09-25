@@ -155,12 +155,17 @@ export class ActivitiesService {
         { id: dto.cicloId },
         'El ciclo no existe',
       );
-    if (dto.responsableId)
+    if (dto.responsableId) {
       await this.mustExist(
         this.userRepo,
         { id: dto.responsableId },
         'El responsable no existe',
       );
+      const responsable = await this.userRepo.findOneBy({
+        id: dto.responsableId,
+      });
+      a.responsable = responsable!;
+    }
 
     if (dto.procesosIds) {
       const procesos = await this.procesoRepo.findBy({
