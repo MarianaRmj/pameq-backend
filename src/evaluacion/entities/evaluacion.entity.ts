@@ -1,4 +1,3 @@
-// entities/evaluacion.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,10 +6,12 @@ import {
   Index,
   OneToMany,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { OportunidadMejoraEstandar } from 'src/oportunidad-mejora/entities/oportunidad-mejora.entity';
 import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 import { FortalezaEstandar } from 'src/fortalezas/entities/fortaleza.entity';
+import { Estandar } from 'src/evaluacion/entities/estandar.entity';
 
 @Index(['estandarId', 'autoevaluacionId'], { unique: true })
 @Entity('evaluacion_cualitativa')
@@ -42,20 +43,22 @@ export class EvaluacionCualitativaEstandar {
   @CreateDateColumn({ name: 'created_at' })
   created_at: Date;
 
-  @OneToMany(
-    () => OportunidadMejoraEstandar,
-    (oportunidad) => oportunidad.evaluacion,
-    { cascade: true },
-  )
-  oportunidades: OportunidadMejoraEstandar[];
-
-  @OneToMany(() => FortalezaEstandar, (fortaleza) => fortaleza.evaluacion, {
+  @OneToMany(() => OportunidadMejoraEstandar, (o) => o.evaluacion, {
     cascade: true,
   })
+  oportunidades: OportunidadMejoraEstandar[];
+
+  @OneToMany(() => FortalezaEstandar, (f) => f.evaluacion, { cascade: true })
   fortalezas: FortalezaEstandar[];
 
-  @ManyToOne(() => Autoevaluacion, (autoeval) => autoeval.evaluaciones, {
+  // 🔹 relaciones explícitas para poder hacer joins por nombre
+  @ManyToOne(() => Autoevaluacion, (a) => a.evaluaciones, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'autoevaluacion_id' })
   autoevaluacion: Autoevaluacion;
+
+  @ManyToOne(() => Estandar, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'estandar_id' })
+  estandar: Estandar;
 }

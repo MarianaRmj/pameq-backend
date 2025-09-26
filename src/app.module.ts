@@ -30,6 +30,7 @@ import { AutoevaluacionModule } from './autoevaluacion/autoevaluacion.module';
 import { EvidenciaFortalezaModule } from './evidencia-fortaleza/evidencia-fortaleza.module';
 import { OportunidadMejoraModule } from './oportunidad-mejora/oportunidad-mejora.module';
 import { FortalezasModule } from './fortalezas/fortalezas.module';
+import { MatrizPriorizacionModule } from './matriz_priorizacion/matriz_priorizacion.module';
 import * as path from 'path';
 
 @Module({
@@ -87,6 +88,7 @@ import * as path from 'path';
     EvidenciaFortalezaModule,
     OportunidadMejoraModule,
     FortalezasModule,
+    MatrizPriorizacionModule,
   ],
 })
 export class AppModule {}

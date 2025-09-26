@@ -1,18 +1,24 @@
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+// src/processes/dto/select-process.dto.ts
+import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class SelectProcessDto {
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
   procesoId: number;
 
   @IsOptional()
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
   estandarId?: number;
 
-  @IsNumber()
+  @Type(() => Number)
+  @IsInt()
   usuarioId: number;
 
+  @Type(() => Boolean)
   @IsBoolean()
-  seleccion: boolean;
+  seleccionado: boolean; // ⬅️ igual que la entidad
 
   @IsOptional()
   @IsString()

@@ -11,6 +11,7 @@ import { Sede } from 'src/sedes/entities/sede.entity';
 import { Institution } from 'src/institutions/entities/institution.entity';
 import { UpdateCicloDto } from './dto/update-cycle.dto';
 import { Event } from 'src/event/entities/event.entity';
+import { CicloEstado } from './enums/ciclo-estado.enum';
 
 @Injectable()
 export class CyclesService {
@@ -130,5 +131,40 @@ export class CyclesService {
     if (result.affected === 0) {
       throw new NotFoundException('Ciclo no encontrado');
     }
+  }
+
+  async findActiveGlobal() {
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const ciclo = await this.cicloRepo
+      .createQueryBuilder('c')
+      .where('c.estado = :estado', { estado: CicloEstado.ACTIVO })
+      .andWhere(':today BETWEEN c.fecha_inicio AND c.fecha_fin', { today })
+      .getOne();
+
+    if (!ciclo) {
+      throw new NotFoundException('No hay ciclo activo vigente.');
+    }
+    return ciclo;
+  }
+
+  // CyclesService
+  async activate(id: number) {
+    await this.cicloRepo.manager.transaction(async (em) => {
+      // 1) Poner INACTIVO el que esté ACTIVO (si existe)
+      await em
+        .createQueryBuilder()
+        .update(Ciclo)
+        .set({ estado: CicloEstado.INACTIVO })
+        .where('estado = :estado', { estado: CicloEstado.ACTIVO })
+        .execute();
+
+      // 2) Activar el nuevo
+      const ciclo = await em.findOne(Ciclo, { where: { id } });
+      if (!ciclo) throw new NotFoundException('Ciclo no encontrado');
+      ciclo.estado = CicloEstado.ACTIVO;
+      await em.save(ciclo);
+    });
+
+    return this.findOne(id);
   }
 }

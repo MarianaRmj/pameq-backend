@@ -16,6 +16,11 @@ import { UpdateCicloDto } from './dto/update-cycle.dto';
 export class CyclesController {
   constructor(private readonly ciclosService: CyclesService) {}
 
+  @Get('active')
+  getActive() {
+    return this.ciclosService.findActiveGlobal();
+  }
+
   @Post()
   create(@Body() dto: CreateCicloDto) {
     return this.ciclosService.create(dto);
@@ -42,5 +47,10 @@ export class CyclesController {
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number) {
     return this.ciclosService.remove(id);
+  }
+
+  @Put(':id/activate')
+  activate(@Param('id', ParseIntPipe) id: number) {
+    return this.ciclosService.activate(id);
   }
 }

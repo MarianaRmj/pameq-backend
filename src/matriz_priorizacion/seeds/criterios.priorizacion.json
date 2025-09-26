@@ -1,0 +1,13 @@
+[
+  { "dominio": "riesgo",     "valor": 1, "etiqueta": "No representa ningún riesgo para usuarios, trabajadores o la institución" },
+  { "dominio": "riesgo",     "valor": 3, "etiqueta": "Representa un riesgo mínimo para usuarios, trabajadores o la institución" },
+  { "dominio": "riesgo",     "valor": 5, "etiqueta": "Representa un alto riesgo para usuarios, trabajadores o la institución" },
+
+  { "dominio": "frecuencia", "valor": 1, "etiqueta": "El estándar desarrolla procedimientos que se ejecutan solo algunas veces al año" },
+  { "dominio": "frecuencia", "valor": 3, "etiqueta": "El estándar desarrolla procedimientos que se ejecutan varias veces al mes" },
+  { "dominio": "frecuencia", "valor": 5, "etiqueta": "El estándar desarrolla procedimientos que se ejecutan muchas veces al día" },
+
+  { "dominio": "costo",      "valor": 1, "etiqueta": "Si falla el procedimiento es poco costoso para la institución" },
+  { "dominio": "costo",      "valor": 3, "etiqueta": "Si falla el procedimiento trae costos importantes para la institución" },
+  { "dominio": "costo",      "valor": 5, "etiqueta": "Si falla el procedimiento es muy costoso para la institución" }
+]

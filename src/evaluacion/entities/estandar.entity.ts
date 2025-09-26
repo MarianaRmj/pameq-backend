@@ -4,6 +4,7 @@ import {
   Column,
   ManyToMany,
   ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { Autoevaluacion } from 'src/autoevaluacion/entities/autoevaluacion.entity';
 import { Proceso } from 'src/processes/entities/process.entity';
@@ -29,5 +30,6 @@ export class Estandar {
   autoevaluaciones: Autoevaluacion[];
 
   @ManyToOne(() => Proceso, (proceso) => proceso.estandares, { nullable: true })
+  @JoinColumn({ name: 'proceso_id' }) // ← agrega el JoinColumn si falta
   proceso: Proceso;
 }
